@@ -104,17 +104,32 @@
 
         <div class="utility-item">
             <div class="utility-avatar">
-                L
-                <span class="online-dot"></span>
+                <div class="avatar-wrapper">
+                    <div class="avatar-display">
+                        <span id="avatar-content">L</span>
+                    </div>
+                    <span class="network-dot"></span>
+                </div>
             </div>
             <div class="dropdown-panel">
                 <div class="dropdown-content user-panel">
-                    <div class="user-header">
-                        <div class="utility-avatar" style="width: 48px; height: 48px; font-size: 20px;">L</div>
-                        <div class="user-info">
-                            <div class="user-name">Leonis</div>
-                            <div class="user-email">leonis@hfut.edu.cn</div>
+                    <div class="profile-header-centered">
+                        <div class="avatar-wrapper panel-avatar-wrapper">
+                            <div class="avatar-display">
+                                <span>L</span>
+                            </div>
+                            <span class="network-dot"></span>
                         </div>
+                        <button id="upload-avatar-btn" class="ghost-button"
+                            style="padding: 4px 10px; font-size: 0.75rem; margin-top: 4px; margin-bottom: 4px;">更换头像</button>
+                        <div class="profile-name">Leonis</div>
+                        <div class="profile-email">leonis@hfut.edu.cn</div>
+                        <div id="network-status-badge" class="status-badge">
+                            <span class="network-dot"></span>
+                            <span class="status-text">在线</span>
+                        </div>
+                        <input type="file" id="avatar-upload-input" accept="image/png, image/jpeg, image/gif"
+                            style="display: none;">
                     </div>
                     <div class="dropdown-divider"></div>
                     <div class="dropdown-menu">
@@ -123,7 +138,7 @@
                         <button class="dropdown-item"
                             onclick="document.querySelector('[data-view=\'view-stats\']').click()">📈 数据统计</button>
                         <div class="dropdown-divider"></div>
-                        <button class="dropdown-item text-danger">退出登录</button>
+                        <button id="login-trigger-btn" class="dropdown-item">登录 / 注册</button>
                     </div>
                 </div>
             </div>
@@ -159,13 +174,13 @@
                 <button class="nav-btn active" data-view="view-home">
                     <span class="icon">🏠</span> 刷题大厅
                 </button>
-                <button class="nav-btn" data-view="view-dashboard">
+                <button class="nav-btn auth-required" data-view="view-dashboard">
                     <span class="icon">📊</span> 我的错题
                 </button>
-                <button class="nav-btn" data-view="view-favorites">
+                <button class="nav-btn auth-required" data-view="view-favorites">
                     <span class="icon">⭐</span> 收藏题目
                 </button>
-                <button class="nav-btn" data-view="view-stats">
+                <button class="nav-btn auth-required" data-view="view-stats">
                     <span class="icon">📈</span> 数据统计
                 </button>
             </nav>
@@ -267,6 +282,37 @@
 
             <div id="loading-indicator" class="hidden">加载数据中...</div>
         </main>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal-overlay" class="hidden">
+        <div class="login-modal">
+            <button id="close-modal-btn" aria-label="关闭">&times;</button>
+            <div class="modal-header">
+                <h2 class="modal-title login-only">登录</h2>
+                <h2 class="modal-title register-only">注册账号</h2>
+                <p>欢迎回到概率论与数理统计动态复习引擎</p>
+            </div>
+            <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+                <input type="text" class="form-input register-only" placeholder="你的昵称 (例: Leonis)">
+                <input type="email" class="form-input" placeholder="邮箱地址">
+                <input type="password" class="form-input" placeholder="密码">
+                <input type="password" class="form-input register-only" placeholder="确认密码">
+
+                <div class="forgot-row login-only" style="align-self: flex-end;">
+                    <a href="#" class="forgot-link">忘记密码？</a>
+                </div>
+
+                <button class="primary-btn login-only" style="margin-top: 8px;">登 录</button>
+                <button class="primary-btn register-only" style="margin-top: 8px;">立即注册</button>
+            </div>
+            <div class="modal-footer login-only">
+                还没有账号？ <a href="#" id="to-register-link" class="register-link">立即注册</a>
+            </div>
+            <div class="modal-footer register-only">
+                已有账号？ <a href="#" id="to-login-link" class="register-link">立即登录</a>
+            </div>
+        </div>
     </div>
 
     <!-- KaTeX JS -->

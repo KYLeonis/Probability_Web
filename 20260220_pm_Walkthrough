@@ -1,0 +1,101 @@
+# Phase 1 Step 2: Floating Utility Header
+
+按照视觉规格 (Steve's Specs) 和逻辑架构 (Riley's Logic)，我已成功在项目中加入了全局悬浮工具栏。
+
+## 实施详情
+- **HTML (`index.html`)**: 在 `<body>` 下方且独立于视图控制区域的顶层增加了 `#utility-header`。内部包含了四个深灰色线框的 SVG 图标（日间模式、专注模式、设置、通知）以及带在线状态点的用户头像。其中所有图标均绑定了简单的 `console.log()` 用于测试和占位。
+- **CSS (`style.css`)**:  设置了定位与视觉样式：
+    - `position: fixed; top: 24px; right: 32px;` 确保其固定不随滚动移动。
+    - `border-radius: 9999px` 形成胶囊形状。
+    - `#f8f9fa` 背景色和多重 `box-shadow` (`0 10px 15px -3px rgba(0, 0, 0, 0.1)`, 等) 以营造悬浮和深度感。
+    - `.utility-btn:hover { transform: scale(1.1); }` 打造平滑过渡。
+    - 头像右下方应用了绝对定位的绿色圆点（含 2px 白色描边）。
+    - 确保 `z-index: 1000` 始终悬停于搜索栏与页面内容之上。
+
+## 验证与测试
+通过内置测试浏览器的验证：
+1. **滚动稳定**: 界面向下滚动时，工具栏稳定在右上角。
+2. **视觉感官**: 获得了预期的悬浮多层阴影、完美的圆形带边框在线状态点，和响应式的 hover 动效。
+3. **占位反馈**: 点击任一图标，均在控制台触发输出（见测试视频）。
+
+![交互测试录像](C:/Users/lz239/.gemini/antigravity/brain/288b7aea-35ea-4114-86a1-74cd51515c7f/verify_utility_header_1771572255007.webp)
+
+## Step 2: Dark Mode Toggle
+在上述悬浮工具栏中增强了首个按钮的功能，实现了暗色模式的切换与状态持久化。
+
+### 实施详情
+- **CSS 变量提取与主题构建 (`style.css`)**:  
+  在 `:root` 抽取了基础颜色作为 CSS 变量（`--bg-color`, `--card-bg`, `--text-color`, `--border-color` 等）。定义了 `[data-theme="dark"]`，为其重置了极致的黑白深灰系极简变量（如 `--bg-color: #121212`, `--card-bg: #1e1e1e`）。同时为 `body` 和相关的卡片元素注入了 `transition: 0.3s`。
+  
+- **UI 与 DOM (`index.html`)**:  
+  提取了 SVG 路径并为第一个图标注入了 `id="theme-toggle"`。内嵌了日间模式（太阳 ☀️）与夜间模式（月亮 🌙）两种 SVG 结构，利用 CSS `display: none` 相互切换。确保了纯净视觉传达。
+
+- **逻辑与存储 (`script.js`)**:  
+  新增了深色模式专用的切换函数，基于 `document.documentElement.setAttribute('data-theme', 'dark')`。同时结合 `localStorage.setItem('theme')` 使界面状态在刷新浏览器后精准保持。
+
+### 验证与测试
+1. **白底黑字与黑底白字的平滑切换**: 背景颜色、卡片视图背景及文字颜色均能在点击后获得 0.3s 的顺滑视觉过渡。
+2. **图标正确翻转**: 从日渐模式切换到深色模式时，太阳图标瞬间隐匿，月亮图标平滑交替。
+3. **状态持久保留**: 点击设置为深色模式后刷新界面，能够准确还原为深黑背景体验。
+
+![暗色模式切换录像](C:/Users/lz239/.gemini/antigravity/brain/288b7aea-35ea-4114-86a1-74cd51515c7f/verify_dark_mode_1771574345440.webp)
+
+## Step 2.1: Search Bar & Logo Dark Mode Adaptation
+
+对现有界面的细节进行了更进一步的视觉打磨与深色系完美适配。
+
+### 实施详情
+- **搜索栏药丸化 (`style.css`)**:  
+  将中心搜索栏重构为“悬浮药丸”形态：绝对居中限制最大宽度（`max-width: 600px`），并在下方留出 32px 的呼吸边距（`margin: 0 auto 32px auto`）。边界圆角全开（`border-radius: 9999px`）。此外，彻底修复了暗色模式下的白色输入框 Bug，使内部的 `<input>` 被赋予了 `background: transparent;` 属性，保证始终呈现 `var(--card-bg)` 的深灰质感，而输入文字也已同步为 `var(--text-color)`。
+
+- **动态 Logo 切换 (`script.js`)**:  
+  结合全局的 Theme Toggle 机制，在 `setTheme()` 函数内部捕获了侧边栏顶部的品牌图像 `.brand-img`。在向 `dark` 发送切换信号时，自动替换其 `src` 指向白字清晰版本的 `hfut-logo.png`，而在切回 `light` 模式时，迅速恢复原初版本的 `hfut-brand.png`。
+
+### 验证与测试
+1. **搜索栏 UI 更新**: 搜索栏变身为完美的药丸形状且居中，有效避免了与右侧悬浮工具栏或侧边栏重叠的尴尬。
+2. **纯粹的暗色输入体验**: 在暗色模式下点击并输入文本，输入框呈现出清爽的深灰背景（完全透明）和纯白字体。
+3. **无缝的 Logo 切换**: 日间模式与暗黑模式互相切换时，左上角的合工大校徽如魔法般实现智能黑白反转切换。
+
+![Step 2.1 验证录像](C:/Users/lz239/.gemini/antigravity/brain/288b7aea-35ea-4114-86a1-74cd51515c7f/verify_step_2_1_1771575896943.webp)
+
+## Step 2.2: Native Fullscreen API & SVG Sync
+
+为悬浮工具栏的专注模式按钮接入了原生的全屏沉浸体验。
+
+### 实施详情
+- **SVG 重绘 (`index.html`)**:  
+  去除了原本的简陋占位，引入了带有 `stroke="currentColor"` 的线框 SVG 图标。初始状态为向外扩张的 Maximize 形态。
+  
+- **全屏逻辑与状态同步 (`script.js`)**:  
+  绑定了 `document.documentElement.requestFullscreen()` 与 `document.exitFullscreen()` 原生 API 用于全屏控制。最关键的是，**舍弃了在 Click 事件中直接修改图标的简陋做法**，而是注册了全局的 `fullscreenchange` 事件监听器。无论用户是通过按钮点击还是无意间按下键盘 Esc 退出全屏，SVG 图标都能精准同步复位。
+
+### 验证与测试
+1. **全屏沉浸与图标演变**: 点击全屏按钮后，浏览器如预期般全屏，图标自动演变为向内收缩的十字形。
+2. **Esc 原生退出兼容**: 在全屏模式下按下键盘 Esc 后，全屏退出且图标丝滑复原为扩张状态。
+3. **颜色自适应**: 和工具栏其他元素一样，由于 `currentColor` 的加持，SVG 图标在亮暗色模式间流畅切换，完美同步。
+
+![全屏功能测试录像](C:/Users/lz239/.gemini/antigravity/brain/288b7aea-35ea-4114-86a1-74cd51515c7f/verify_fullscreen_toggle_1771578509928.webp)
+
+## Step 3: Hover Popovers & Sidebar Expansion
+
+完成了侧边栏功能入口的全面扩容，并引入了浮层式的设置排版体验。
+
+### 实施详情
+- **DOM 与 UI 布局扩容 (`index.html`)**:  
+  在侧边栏新增了“⭐ 收藏题目”和“📈 数据统计”的功能入口，为主视图 (`#content-area`) 同步挂载了正在建设中的视图容器，完善了 SPA 整体路由骨架。
+  在悬浮工具栏中引入了分层架构方案，将设置、通知以及用户头像包裹于独立 `.utility-item`。
+  分别注入了提供精细化控制的“字号/行间距”离散按钮组面板（Setting Panel）、精美插画的空状态通知面板以及功能完备的用户账户下拉菜单（User Panel）。
+  
+- **交互级 CSS 悬停动效 (`style.css`)**:  
+  构建了隐藏在 `.dropdown-panel` 中的桥梁机制：当鼠标悬停于工具栏图标时触发 `display: block`，同时使用 `popoverFadeIn` 关键帧实现了高度现代感的浮现微交互（Y轴位移淡入）。面板视觉效果引入了 `box-shadow` 和 `.segmented-control` 的精致布局。
+  
+- **实时排版引擎 (`script.js`)**:  
+  通过在 `:root` 重构基准 CSS 变量，实现了利用 `setProperty('--content-font-size')` 动态无刷新更改页面 `.question-content` 区块文字规模及间距大小的能力。
+
+### 验证与测试
+1. **侧边栏解耦联动**: 点击新加入的收藏与视图图标，主视图精确无误地切换到建设占位符中。
+2. **零延迟浮层触发**: 鼠标移动至右上角的三大件工具图标上，悬浮面板弹窗的出现丝滑且稳定，没有任何割裂和断触现象。
+3. **即时排版反馈**: 在“设置”浮层中点击不同离散控制按钮，全局界面的行距与字体瞬间重叠变化，且按钮本身自动匹配高亮的活跃 UI。
+
+![Step 3 悬浮面板交互与排版引擎测试录像](C:/Users/lz239/.gemini/antigravity/brain/288b7aea-35ea-4114-86a1-74cd51515c7f/verify_hover_popovers_1771580519161.webp)
+![设置界面悬停截图](C:/Users/lz239/.gemini/antigravity/brain/288b7aea-35ea-4114-86a1-74cd51515c7f/settings_hover_1771580554004.png)

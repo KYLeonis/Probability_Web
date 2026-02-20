@@ -512,6 +512,147 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- Login Modal Logic ---
+    const loginModalOverlay = document.getElementById('login-modal-overlay');
+    const closeLoginBtn = document.getElementById('close-modal-btn');
+    const loginTriggerBtn = document.getElementById('login-trigger-btn');
+    const authRequiredBtns = document.querySelectorAll('.auth-required');
+
+    // In-place Swap Links
+    const toRegisterLink = document.getElementById('to-register-link');
+    const toLoginLink = document.getElementById('to-login-link');
+    const loginModal = document.querySelector('.login-modal');
+
+    function openLoginModal() {
+        if (!loginModalOverlay) return;
+        loginModalOverlay.classList.remove('hidden');
+        // trigger reflow
+        void loginModalOverlay.offsetWidth;
+        loginModalOverlay.classList.add('active');
+    }
+
+    function closeLoginModal() {
+        if (!loginModalOverlay) return;
+        loginModalOverlay.classList.remove('active');
+        // Wait for CSS transition (0.3s) before hidden
+        setTimeout(() => {
+            loginModalOverlay.classList.add('hidden');
+            // Reset state to login
+            if (loginModal) loginModal.classList.remove('is-register');
+        }, 300);
+    }
+
+    if (toRegisterLink) {
+        toRegisterLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (loginModal) loginModal.classList.add('is-register');
+        });
+    }
+
+    if (toLoginLink) {
+        toLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (loginModal) loginModal.classList.remove('is-register');
+        });
+    }
+
+    if (loginTriggerBtn) {
+        loginTriggerBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openLoginModal();
+        });
+    }
+
+    if (closeLoginBtn) {
+        closeLoginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeLoginModal();
+        });
+    }
+
+    if (authRequiredBtns.length > 0) {
+        authRequiredBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Intercept navigation for guarded routes
+                e.preventDefault();
+                e.stopPropagation();
+                openLoginModal();
+            });
+        });
+    }
+
     // --- Init ---
     init();
+});
+
+// 全局头像渲染引擎
+window.renderAvatar = function (nickname, imageUrl = null) {
+    const avatarContainers = document.querySelectorAll('.avatar-display');
+    if (avatarContainers.length === 0) return;
+
+    let contentToRender = '';
+    if (imageUrl) {
+        contentToRender = `<img src="${imageUrl}" alt="User Avatar">`;
+    } else {
+        const fallbackSvg = `<svg width="60%" height="60%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+        contentToRender = fallbackSvg;
+        if (nickname && typeof nickname === 'string') {
+            const firstChar = nickname.trim().charAt(0);
+            if (/^[a-zA-Z]$/.test(firstChar)) {
+                contentToRender = firstChar.toUpperCase();
+            } else if (/^[\u4e00-\u9fa5]$/.test(firstChar)) {
+                contentToRender = firstChar;
+            }
+        }
+    }
+
+    avatarContainers.forEach(container => {
+        container.innerHTML = contentToRender;
+    });
+};
+
+// 初始化调用一次，传入默认昵称测试
+document.addEventListener('DOMContentLoaded', () => {
+    // 假设当前用户名为 Leonis
+    renderAvatar('Leonis');
+
+    // 头像上传逻辑
+    const uploadBtn = document.getElementById('upload-avatar-btn');
+    const uploadInput = document.getElementById('avatar-upload-input');
+
+    if (uploadBtn && uploadInput) {
+        uploadBtn.addEventListener('click', () => {
+            uploadInput.click();
+        });
+
+        uploadInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    // 调用全局渲染引擎，传入预览的 base64 图片地址
+                    renderAvatar('Leonis', e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // --- 网络状态即时侦测引擎 ---
+    function updateNetworkStatus() {
+        const isOnline = navigator.onLine;
+        const statusText = document.querySelector('.status-text');
+
+        if (isOnline) {
+            document.body.classList.remove('is-offline');
+            if (statusText) statusText.textContent = '在线';
+        } else {
+            document.body.classList.add('is-offline');
+            if (statusText) statusText.textContent = '离线';
+        }
+    }
+
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+    updateNetworkStatus(); // 初始化调用
 });
