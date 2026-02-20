@@ -39,6 +39,35 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Fullscreen Logic ---
+    const fullscreenToggleBtn = document.getElementById('fullscreen-toggle');
+    if (fullscreenToggleBtn) {
+        const maximizeSvgPath = '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>';
+        const minimizeSvgPath = '<path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>';
+
+        const svgElement = fullscreenToggleBtn.querySelector('svg');
+
+        fullscreenToggleBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message} (${err.name})`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                svgElement.innerHTML = minimizeSvgPath;
+            } else {
+                svgElement.innerHTML = maximizeSvgPath;
+            }
+        });
+    }
+
     // --- State Management ---
     const state = {
         questions: [],
