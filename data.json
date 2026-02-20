@@ -1,0 +1,25 @@
+[
+  {
+    "id": "test_calculus_01",
+    "paper": "2024-2025第一学期A卷",
+    "type": "综合计算题",
+    "tags": [
+      "二维连续型",
+      "边缘密度",
+      "数学期望"
+    ],
+    "content": "设二维连续型随机变量 $(X,Y)$ 的联合概率密度为：$$f(x,y) = \\begin{cases} c e^{-(x+y)}, & 0 < y < x < \\infty \\\\ 0, & \\text{其他} \\end{cases}$$ <br> (1) 求常数 $c$ 的值；<br> (2) 求 $X$ 的边缘概率密度 $f_X(x)$。",
+    "answer": "解析：<br>利用归一性条件 $\\iint_{\\mathbb{R}^2} f(x,y) dx dy = 1$。<br> $$ \\int_{0}^{\\infty} dx \\int_{0}^{x} c e^{-(x+y)} dy = c \\int_{0}^{\\infty} (e^{-x} - e^{-2x}) dx = \\frac{c}{2} = 1 $$ <br>故 $c = 2$。"
+  },
+  {
+    "id": "test_matrix_02",
+    "paper": "2023-2024第二学期B卷",
+    "type": "计算题",
+    "tags": [
+      "多元正态分布",
+      "协方差矩阵"
+    ],
+    "content": "设三维随机向量 $\\boldsymbol{X} = (X_1, X_2, X_3)^T$ 服从 $N(\\boldsymbol{\\mu}, \\boldsymbol{\\Sigma})$，其中：$$ \\boldsymbol{\\mu} = \\begin{pmatrix} 1 \\\\ -1 \\\\ 2 \\end{pmatrix}, \\quad \\boldsymbol{\\Sigma} = \\begin{pmatrix} 4 & 1 & -1 \\\\ 1 & 2 & 1 \\\\ -1 & 1 & 2 \\end{pmatrix} $$ <br>定义 $Y = X_1 - 2X_2 + X_3$。求 $D(Y)$。",
+    "answer": "解析：<br>令 $\\boldsymbol{a} = (1, -2, 1)^T$，<br> $$ D(Y) = \\boldsymbol{a}^T \\boldsymbol{\\Sigma} \\boldsymbol{a} = \\begin{pmatrix} 1 & -2 & 1 \\end{pmatrix} \\begin{pmatrix} 1 \\\\ -2 \\\\ -1 \\end{pmatrix} = 4 $$"
+  }
+]

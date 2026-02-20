@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>合工大概率论与数理统计历年真题题库</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Global Utility Header -->
+    <div id="utility-header">
+        <button class="utility-btn" id="theme-toggle" aria-label="切换主题">
+            <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+        </button>
+        <button class="utility-btn" aria-label="专注模式" onclick="console.log('专注模式 clicked')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
+                </path>
+            </svg>
+        </button>
+        <button class="utility-btn" aria-label="设置" onclick="console.log('设置 clicked')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                </path>
+            </svg>
+        </button>
+        <button class="utility-btn" aria-label="通知" onclick="console.log('通知 clicked')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+        </button>
+        <div class="utility-avatar">
+            L
+            <span class="online-dot"></span>
+        </div>
+    </div>
+
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <button id="menu-toggle" aria-label="Toggle Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <span class="mobile-title">概率论历年真题题库</span>
+    </header>
+
+    <div id="app-container">
+        <!-- Sidebar -->
+        <!-- Sidebar -->
+        <aside id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-area">
+                    <img src="assets/img/hfut-brand.png" alt="HFUT Brand" class="brand-img">
+                    <h1 class="brand-title">概率论历年真题题库</h1>
+                </div>
+            </div>
+
+            <!-- Main Nav (New) -->
+            <nav class="sidebar-main-nav">
+                <button class="nav-btn active" data-view="view-home">
+                    <span class="icon">🏠</span> 刷题大厅
+                </button>
+                <button class="nav-btn" data-view="view-dashboard">
+                    <span class="icon">📊</span> 我的错题
+                </button>
+            </nav>
+
+            <div class="sidebar-tabs">
+                <button class="tab-btn active" data-tab="paper">按试卷</button>
+                <button class="tab-btn" data-tab="knowledge">按知识点</button>
+            </div>
+
+            <div class="sidebar-content" id="sidebar-list">
+                <!-- 动态生成目录列表 -->
+                <div class="empty-state">加载中...</div>
+            </div>
+
+            <!-- Admin Nav (New Position found at bottom) -->
+            <nav class="sidebar-admin-nav">
+                <button class="nav-btn" data-view="view-admin">
+                    <span class="icon">�</span> 录入题目
+                </button>
+                <!-- Retain old bottom nav items if needed, or remove? User asked for "Admin" button at bottom. -->
+                <!-- Let's keep existing links just in case, below admin or merged? -->
+                <!-- User request: "在侧边栏最底部，增加一个 录入题目 (Admin) 按钮". Did not explicitly say remove others, but "re-plan navigation menu" implies replacement. -->
+                <!-- I will keep the admin button as requested at the bottom. -->
+            </nav>
+        </aside>
+
+        <!-- Overlay for mobile sidebar -->
+        <div id="sidebar-overlay"></div>
+
+        <!-- Main Content -->
+        <main id="content-area">
+
+            <!-- VIEW: Home (Existing Search + List) -->
+            <div id="view-home" class="view-section active">
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <div class="search-bar">
+                        <div class="custom-scope-wrapper" id="scope-wrapper">
+                            <div class="scope-trigger" id="scope-trigger">
+                                <span id="scope-text">当前列表</span>
+                                <svg class="scope-arrow" width="10" height="6" viewBox="0 0 10 6" fill="none"
+                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M1 1L5 5L9 1" />
+                                </svg>
+                            </div>
+                            <ul class="scope-dropdown" id="scope-dropdown">
+                                <li class="scope-item active" data-value="current">
+                                    <span class="check-icon">✓</span> 当前列表
+                                </li>
+                                <li class="scope-item" data-value="global">
+                                    <span class="check-icon"></span> 全局题库
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="divider"></div>
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="search-input" placeholder="搜索题目、标签或关键词...">
+                    </div>
+                </div>
+
+                <!-- Question List -->
+                <div id="question-list">
+                    <!-- 动态生成题目卡片 -->
+                </div>
+            </div>
+
+            <!-- VIEW: Dashboard -->
+            <div id="view-dashboard" class="view-section">
+                <div class="empty-state-msg" style="margin-top: 20vh;">
+                    <h3>个人数据看板与错题本建设中...</h3>
+                    <p>Coming Soon</p>
+                </div>
+            </div>
+
+            <!-- VIEW: Admin -->
+            <div id="view-admin" class="view-section">
+                <div class="empty-state-msg" style="margin-top: 20vh;">
+                    <h3>管理员录题工作台建设中...</h3>
+                    <p>Admin Panel Coming Soon</p>
+                </div>
+            </div>
+
+            <div id="loading-indicator" class="hidden">加载数据中...</div>
+        </main>
+    </div>
+
+    <!-- KaTeX JS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Custom Script -->
+    <script src="script.js" defer></script>
+</body>
+
+</html>
