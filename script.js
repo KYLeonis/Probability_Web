@@ -68,6 +68,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Layout Setting Logic (Step 3 Addition) ---
+    const fontSizeButtons = document.querySelectorAll('#font-size-control button');
+    const lineHeightButtons = document.querySelectorAll('#line-height-control button');
+
+    if (fontSizeButtons.length > 0) {
+        fontSizeButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const size = e.target.getAttribute('data-size');
+                document.documentElement.style.setProperty('--content-font-size', size);
+                fontSizeButtons.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+            });
+        });
+    }
+
+    if (lineHeightButtons.length > 0) {
+        lineHeightButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const height = e.target.getAttribute('data-height');
+                document.documentElement.style.setProperty('--content-line-height', height);
+                lineHeightButtons.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+            });
+        });
+    }
+
     // --- State Management ---
     const state = {
         questions: [],

@@ -48,25 +48,85 @@
                 </path>
             </svg>
         </button>
-        <button class="utility-btn" aria-label="设置" onclick="console.log('设置 clicked')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path
-                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
-                </path>
-            </svg>
-        </button>
-        <button class="utility-btn" aria-label="通知" onclick="console.log('通知 clicked')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-        </button>
-        <div class="utility-avatar">
-            L
-            <span class="online-dot"></span>
+        <div class="utility-item">
+            <button class="utility-btn" aria-label="设置">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                    </path>
+                </svg>
+            </button>
+            <div class="dropdown-panel">
+                <div class="dropdown-content">
+                    <div class="setting-group">
+                        <span>阅读字号</span>
+                        <div class="segmented-control" id="font-size-control">
+                            <button data-size="0.95rem">小</button>
+                            <button data-size="1.05rem" class="active">中</button>
+                            <button data-size="1.15rem">大</button>
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <span>行间距</span>
+                        <div class="segmented-control" id="line-height-control">
+                            <button data-height="1.5">紧凑</button>
+                            <button data-height="1.7" class="active">标准</button>
+                            <button data-height="2.0">宽松</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="utility-item">
+            <button class="utility-btn" aria-label="通知">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </button>
+            <div class="dropdown-panel">
+                <div class="dropdown-content empty-panel">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round"
+                        style="color: var(--text-secondary); margin-bottom: 8px;">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        <path d="M19 3l3 3m-3-3l-3 3"></path>
+                    </svg>
+                    <span>暂无消息</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="utility-item">
+            <div class="utility-avatar">
+                L
+                <span class="online-dot"></span>
+            </div>
+            <div class="dropdown-panel">
+                <div class="dropdown-content user-panel">
+                    <div class="user-header">
+                        <div class="utility-avatar" style="width: 48px; height: 48px; font-size: 20px;">L</div>
+                        <div class="user-info">
+                            <div class="user-name">Leonis</div>
+                            <div class="user-email">leonis@hfut.edu.cn</div>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-menu">
+                        <button class="dropdown-item"
+                            onclick="document.querySelector('[data-view=\'view-favorites\']').click()">⭐ 收藏题目</button>
+                        <button class="dropdown-item"
+                            onclick="document.querySelector('[data-view=\'view-stats\']').click()">📈 数据统计</button>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item text-danger">退出登录</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -101,6 +161,12 @@
                 </button>
                 <button class="nav-btn" data-view="view-dashboard">
                     <span class="icon">📊</span> 我的错题
+                </button>
+                <button class="nav-btn" data-view="view-favorites">
+                    <span class="icon">⭐</span> 收藏题目
+                </button>
+                <button class="nav-btn" data-view="view-stats">
+                    <span class="icon">📈</span> 数据统计
                 </button>
             </nav>
 
@@ -171,6 +237,22 @@
             <div id="view-dashboard" class="view-section">
                 <div class="empty-state-msg" style="margin-top: 20vh;">
                     <h3>个人数据看板与错题本建设中...</h3>
+                    <p>Coming Soon</p>
+                </div>
+            </div>
+
+            <!-- VIEW: Favorites (New) -->
+            <div id="view-favorites" class="view-section">
+                <div class="empty-state-msg" style="margin-top: 20vh;">
+                    <h3>收藏真题建设中...</h3>
+                    <p>Coming Soon</p>
+                </div>
+            </div>
+
+            <!-- VIEW: Stats (New) -->
+            <div id="view-stats" class="view-section">
+                <div class="empty-state-msg" style="margin-top: 20vh;">
+                    <h3>全维数据统计与弱项分析分析...</h3>
                     <p>Coming Soon</p>
                 </div>
             </div>
