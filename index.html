@@ -294,17 +294,20 @@
                 <p>欢迎回到概率论与数理统计动态复习引擎</p>
             </div>
             <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
-                <input type="text" class="form-input register-only" placeholder="你的昵称 (例: Leonis)">
-                <input type="email" class="form-input" placeholder="邮箱地址">
-                <input type="password" class="form-input" placeholder="密码">
-                <input type="password" class="form-input register-only" placeholder="确认密码">
+                <input type="text" id="reg-nickname-input" class="form-input register-only"
+                    placeholder="你的昵称 (例: Leonis)">
+                <input type="email" id="auth-email-input" class="form-input" placeholder="邮箱地址">
+                <input type="password" id="auth-password-input" class="form-input" placeholder="密码">
+                <input type="password" id="reg-confirm-password-input" class="form-input register-only"
+                    placeholder="确认密码">
 
                 <div class="forgot-row login-only" style="align-self: flex-end;">
                     <a href="#" class="forgot-link">忘记密码？</a>
                 </div>
 
-                <button class="primary-btn login-only" style="margin-top: 8px;">登 录</button>
-                <button class="primary-btn register-only" style="margin-top: 8px;">立即注册</button>
+                <button id="login-submit-btn" class="primary-btn login-only" style="margin-top: 8px;">登 录</button>
+                <button id="register-submit-btn" class="primary-btn register-only"
+                    style="margin-top: 8px;">立即注册</button>
             </div>
             <div class="modal-footer login-only">
                 还没有账号？ <a href="#" id="to-register-link" class="register-link">立即注册</a>

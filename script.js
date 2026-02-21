@@ -556,10 +556,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function handleLogout() {
+        localStorage.removeItem('currentUser');
+        alert("已安全退出账号");
+        renderUserProfile();
+    }
+
     if (loginTriggerBtn) {
         loginTriggerBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            openLoginModal();
+            if (localStorage.getItem('currentUser')) {
+                handleLogout();
+            } else {
+                openLoginModal();
+            }
         });
     }
 
@@ -567,6 +577,14 @@ document.addEventListener('DOMContentLoaded', () => {
         closeLoginBtn.addEventListener('click', (e) => {
             e.preventDefault();
             closeLoginModal();
+        });
+    }
+
+    const forgotLink = document.querySelector('.forgot-link');
+    if (forgotLink) {
+        forgotLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            alert("💡 本系统暂不支持自动找回密码。\n\n如遗忘密码，请使用新邮箱重新注册，或联系管理员 Leonis(lz2398947517@gmail.com) 处理。");
         });
     }
 
@@ -583,36 +601,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Init ---
     init();
-});
 
-// 全局头像渲染引擎
-window.renderAvatar = function (nickname, imageUrl = null) {
-    const avatarContainers = document.querySelectorAll('.avatar-display');
-    if (avatarContainers.length === 0) return;
+    // 全局头像渲染引擎
+    window.renderAvatar = function (nickname, imageUrl = null) {
+        const avatarContainers = document.querySelectorAll('.avatar-display');
+        if (avatarContainers.length === 0) return;
 
-    let contentToRender = '';
-    if (imageUrl) {
-        contentToRender = `<img src="${imageUrl}" alt="User Avatar">`;
-    } else {
-        const fallbackSvg = `<svg width="60%" height="60%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
-        contentToRender = fallbackSvg;
-        if (nickname && typeof nickname === 'string') {
-            const firstChar = nickname.trim().charAt(0);
-            if (/^[a-zA-Z]$/.test(firstChar)) {
-                contentToRender = firstChar.toUpperCase();
-            } else if (/^[\u4e00-\u9fa5]$/.test(firstChar)) {
-                contentToRender = firstChar;
+        let contentToRender = '';
+        if (imageUrl) {
+            contentToRender = `<img src="${imageUrl}" alt="User Avatar">`;
+        } else {
+            const fallbackSvg = `<svg width="60%" height="60%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+            contentToRender = fallbackSvg;
+            if (nickname && typeof nickname === 'string') {
+                const firstChar = nickname.trim().charAt(0);
+                if (/^[a-zA-Z]$/.test(firstChar)) {
+                    contentToRender = firstChar.toUpperCase();
+                } else if (/^[\u4e00-\u9fa5]$/.test(firstChar)) {
+                    contentToRender = firstChar;
+                }
             }
         }
-    }
 
-    avatarContainers.forEach(container => {
-        container.innerHTML = contentToRender;
-    });
-};
+        avatarContainers.forEach(container => {
+            container.innerHTML = contentToRender;
+        });
+    };
 
-// 初始化调用一次，传入默认昵称测试
-document.addEventListener('DOMContentLoaded', () => {
+    // 初始化调用一次，传入默认昵称测试
     // 假设当前用户名为 Leonis
     renderAvatar('Leonis');
 
@@ -638,6 +654,150 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Cloudflare Worker API Authentication Integration ---
+    const API_URL = 'https://prob-api.lz2398947517.workers.dev/api/auth';
+
+    const emailInput = document.getElementById('auth-email-input');
+    const passwordInput = document.getElementById('auth-password-input');
+    const nicknameInput = document.getElementById('reg-nickname-input');
+    const confirmPasswordInput = document.getElementById('reg-confirm-password-input');
+
+    const loginSubmitBtn = document.getElementById('login-submit-btn');
+    const registerSubmitBtn = document.getElementById('register-submit-btn');
+
+    async function handleAuth(type, payload, button, originalText) {
+        button.textContent = '正在处理...';
+        button.disabled = true;
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+            alert(data.message || (type === 'login' ? '登录调用完毕' : '注册调用完毕'));
+
+            if (response.ok) {
+                if (type === 'login' && data.user) {
+                    // 保存状态
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    closeLoginModal();
+                    renderUserProfile();
+                } else if (type === 'register') {
+                    // If register successful, switch to login view automatically
+                    if (loginModal) loginModal.classList.remove('is-register');
+                }
+            }
+        } catch (error) {
+            console.error('Auth API Error:', error);
+            alert('请求失败，请检查网络连接或稍后再试。');
+        } finally {
+            button.textContent = originalText;
+            button.disabled = false;
+        }
+    }
+
+    if (loginSubmitBtn) {
+        loginSubmitBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = emailInput?.value.trim();
+            const password = passwordInput?.value.trim();
+
+            if (!email || !password) {
+                alert('请输入邮箱和密码。');
+                return;
+            }
+
+            const payload = { type: 'login', email, password };
+            handleAuth('login', payload, loginSubmitBtn, '登 录');
+        });
+    }
+
+    if (registerSubmitBtn) {
+        registerSubmitBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = emailInput?.value.trim();
+            const nickname = nicknameInput?.value.trim();
+            const password = passwordInput?.value.trim();
+            const confirmPassword = confirmPasswordInput?.value.trim();
+
+            if (!email || !nickname || !password) {
+                alert('请完整填写注册信息。');
+                return;
+            }
+            if (password !== confirmPassword) {
+                alert('两次输入的密码不一致。');
+                return;
+            }
+
+            const payload = { type: 'register', email, nickname, password };
+            handleAuth('register', payload, registerSubmitBtn, '立即注册');
+        });
+    }
+
+    // --- 用户状态持久化与 UI 渲染引擎 ---
+    function renderUserProfile() {
+        const userStr = localStorage.getItem('currentUser');
+        const profileHeader = document.querySelector('.profile-header-centered');
+        const loginTriggerBtn = document.getElementById('login-trigger-btn');
+        const profileName = document.querySelector('.profile-name');
+        const profileEmail = document.querySelector('.profile-email');
+        const uploadAvatarBtn = document.getElementById('upload-avatar-btn');
+
+        if (userStr) {
+            try {
+                const user = JSON.parse(userStr);
+
+                // 显示个人信息区域
+                if (profileHeader) profileHeader.style.display = 'flex';
+                if (uploadAvatarBtn) uploadAvatarBtn.style.display = 'inline-block';
+
+                // 更新用户信息
+                if (profileName) profileName.textContent = user.nickname;
+                if (profileEmail) profileEmail.textContent = user.email;
+
+                // 底部按钮切为“退出账号”
+                if (loginTriggerBtn) {
+                    loginTriggerBtn.textContent = '退出账号';
+                    loginTriggerBtn.style.color = '#dc2626';
+                    loginTriggerBtn.style.display = 'block';
+                }
+
+                // 渲染用户头像（大写首字母或头像系统）
+                if (window.renderAvatar) {
+                    window.renderAvatar(user.nickname);
+                }
+
+                // 更新网络侦测状态
+                updateNetworkStatus();
+            } catch (e) {
+                console.error('Failed to parse user data:', e);
+                localStorage.removeItem('currentUser');
+                renderUserProfile(); // 清理并退回未登录状态
+            }
+        } else {
+            // 未登录状态
+            if (profileHeader) profileHeader.style.display = 'flex';
+            if (uploadAvatarBtn) uploadAvatarBtn.style.display = 'none';
+
+            if (profileName) profileName.textContent = '未登录';
+            if (profileEmail) profileEmail.textContent = '请登录以使用完整功能';
+
+            // 底部按钮切为“登录 / 注册”
+            if (loginTriggerBtn) {
+                loginTriggerBtn.textContent = '登录 / 注册';
+                loginTriggerBtn.style.color = ''; // 恢复默认
+                loginTriggerBtn.style.display = 'block';
+            }
+
+            if (window.renderAvatar) {
+                window.renderAvatar('?'); // 未登录显示默认字符
+            }
+        }
+    }
+
     // --- 网络状态即时侦测引擎 ---
     function updateNetworkStatus() {
         const isOnline = navigator.onLine;
@@ -655,4 +815,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('online', updateNetworkStatus);
     window.addEventListener('offline', updateNetworkStatus);
     updateNetworkStatus(); // 初始化调用
+
+    // 初始化应用状态 UI
+    renderUserProfile();
 });
