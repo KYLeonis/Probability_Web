@@ -1501,3 +1501,241 @@ body.dark-mode .katex-display:hover {
     margin-top: 8px;
     opacity: 0.8;
 }
+
+/* ==========================================
+   导出按钮场景隔离 (仅在错题/收藏中显示)
+   ========================================== */
+.export-btn {
+    display: none !important;
+}
+
+#view-mistakes .export-btn,
+#view-favorites .export-btn {
+    display: inline-flex !important;
+    margin-left: auto;
+    /* 尝试将其推向右侧 */
+}
+
+
+
+/* ==========================================
+   局部滚动条修复 (Scroll Bug Fix)
+   ========================================== */
+.view-section.active {
+    display: flex !important;
+    /* 覆盖原本的 block，开启 flex 垂直布局 */
+    flex-direction: column;
+    height: 100%;
+}
+
+.question-list-container {
+    flex: 1;
+    overflow-y: auto;
+    /* 允许内部滚动 */
+    padding: 0 60px 60px 60px;
+}
+
+@media (max-width: 768px) {
+    .question-list-container {
+        padding: 0 16px 40px 16px;
+    }
+}
+
+/* ==========================================
+   批量 PDF 原生打印排版 (高密度紧凑考卷版)
+   ========================================== */
+@media print {
+
+    /* 设置 A4 纸页边距，最大化利用纸张 */
+    @page {
+        margin: 1.2cm;
+    }
+
+    /* 1. 基础重置：打破全部限制与透明度隐身属性 */
+    html,
+    body,
+    #app-container,
+    #content-area,
+    .view-section.active,
+    .question-list-container {
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible !important;
+        position: static !important;
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        background: #ffffff !important;
+    }
+
+    /* 2. 隐藏不必要的侧边栏、工具栏、非当前视图等 */
+    #sidebar,
+    #sidebar-overlay,
+    .mobile-header,
+    #utility-header,
+    .view-header,
+    .search-container,
+    .view-section:not(.active) {
+        display: none !important;
+    }
+
+    /* 3. 彻底隐藏题目卡片内的所有操作按钮！ */
+    .card-action-group {
+        display: none !important;
+    }
+
+    /* 4. 字体颜色强制转黑 */
+    body,
+    .question-card,
+    .question-card *,
+    .answer-content,
+    .katex {
+        color: #000000 !important;
+        text-shadow: none !important;
+    }
+
+    /* 5. 卡片紧凑排版 (大幅度缩小留白) */
+    .question-card {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        margin-bottom: 12px !important;
+        /* 减小卡片间距 */
+        padding: 12px 16px !important;
+        /* 减小卡片内边距 */
+        border: 1px solid #bbbbbb !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+        opacity: 1 !important;
+    }
+
+    /* 6. 字体缩放与行高紧凑化 */
+    .question-content,
+    .answer-content {
+        font-size: 10pt !important;
+        /* 缩小正文字号 */
+        line-height: 1.4 !important;
+        /* 紧凑行高 */
+        margin-bottom: 8px !important;
+    }
+
+    .card-header {
+        margin-bottom: 8px !important;
+    }
+
+    .options-container {
+        margin-top: 8px !important;
+        margin-bottom: 8px !important;
+        gap: 4px !important;
+    }
+
+    .option-btn {
+        padding: 6px 10px !important;
+        font-size: 9.5pt !important;
+    }
+
+    /* 7. 解析强制展开并紧凑化 */
+    .answer-section {
+        max-height: none !important;
+        height: auto !important;
+        opacity: 1 !important;
+        display: block !important;
+        border-top: 1px dashed #cccccc !important;
+        margin-top: 8px !important;
+        padding-top: 8px !important;
+        background: transparent !important;
+    }
+}
+
+/* ==========================================
+   搜索区域响应式避让 (UI Bug Fix)
+   ========================================== */
+@media (max-width: 1100px) and (min-width: 769px) {
+    .search-container {
+        padding-right: 240px;
+        /* 为右上角工具栏预留安全空间 */
+    }
+}
+
+/* ==========================================
+   智能下拉联想菜单样式 (Autocomplete)
+   ========================================== */
+.search-suggestions {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+[data-theme="dark"] .search-suggestions {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.search-suggestions.hidden {
+    display: none;
+}
+
+.suggestion-group-title {
+    padding: 10px 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.suggestion-item {
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    transition: background-color 0.2s;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background-color: var(--hover-bg);
+    color: var(--primary-color);
+}
+
+.q-snippet {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70%;
+}
+
+.q-source-tag {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    background: rgba(139, 0, 0, 0.08);
+    color: var(--primary-color);
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+[data-theme="dark"] .q-source-tag {
+    background: rgba(255, 100, 100, 0.1);
+    color: #F87171;
+}
+
+.suggestion-empty {
+    padding: 16px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}

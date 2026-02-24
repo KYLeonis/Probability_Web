@@ -174,7 +174,7 @@
                 <button class="nav-btn active" data-view="view-home">
                     <span class="icon">🏠</span> 刷题大厅
                 </button>
-                <button class="nav-btn auth-required" data-view="view-dashboard">
+                <button class="nav-btn auth-required" data-view="view-mistakes">
                     <span class="icon">📊</span> 我的错题
                 </button>
                 <button class="nav-btn auth-required" data-view="view-favorites">
@@ -195,16 +195,6 @@
                 <div class="empty-state">加载中...</div>
             </div>
 
-            <!-- Admin Nav (New Position found at bottom) -->
-            <nav class="sidebar-admin-nav">
-                <button class="nav-btn" data-view="view-admin">
-                    <span class="icon">�</span> 录入题目
-                </button>
-                <!-- Retain old bottom nav items if needed, or remove? User asked for "Admin" button at bottom. -->
-                <!-- Let's keep existing links just in case, below admin or merged? -->
-                <!-- User request: "在侧边栏最底部，增加一个 录入题目 (Admin) 按钮". Did not explicitly say remove others, but "re-plan navigation menu" implies replacement. -->
-                <!-- I will keep the admin button as requested at the bottom. -->
-            </nav>
         </aside>
 
         <!-- Overlay for mobile sidebar -->
@@ -217,7 +207,7 @@
             <div id="view-home" class="view-section active">
                 <!-- Search Bar -->
                 <div class="search-container">
-                    <div class="search-bar">
+                    <div class="search-bar" id="search-wrapper" style="position: relative;">
                         <div class="custom-scope-wrapper" id="scope-wrapper">
                             <div class="scope-trigger" id="scope-trigger">
                                 <span id="scope-text">当前列表</span>
@@ -239,6 +229,7 @@
                         <div class="divider"></div>
                         <span class="search-icon">🔍</span>
                         <input type="text" id="search-input" placeholder="搜索题目、标签或关键词...">
+                        <div id="search-suggestions" class="search-suggestions hidden"></div>
                     </div>
                 </div>
 
@@ -250,8 +241,14 @@
 
             <!-- VIEW: Mistakes (Action Center) -->
             <div id="view-mistakes" class="view-section">
-                <div class="view-header">
-                    <h2>我的错题本</h2>
+                <div class="view-header"
+                    style="display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <h2 style="margin:0;">我的错题本</h2>
+                    <div class="bulk-export-group">
+                        <button class="ghost-button" onclick="window.exportAllToMarkdown('userMistakes')">📝 导出
+                            Markdown</button>
+                        <button class="ghost-button" onclick="window.exportAllToPdf('view-mistakes')">📄 导出 PDF</button>
+                    </div>
                 </div>
                 <div id="mistakes-list" class="question-list-container">
                     <!-- 动态复用卡片渲染 -->
@@ -260,8 +257,15 @@
 
             <!-- VIEW: Favorites (New) -->
             <div id="view-favorites" class="view-section">
-                <div class="view-header">
-                    <h2>收藏真题</h2>
+                <div class="view-header"
+                    style="display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <h2 style="margin:0;">收藏真题</h2>
+                    <div class="bulk-export-group">
+                        <button class="ghost-button" onclick="window.exportAllToMarkdown('userFavorites')">📝 导出
+                            Markdown</button>
+                        <button class="ghost-button" onclick="window.exportAllToPdf('view-favorites')">📄 导出
+                            PDF</button>
+                    </div>
                 </div>
                 <div id="favorites-list" class="question-list-container">
                     <!-- 动态复用卡片渲染 -->
@@ -303,13 +307,7 @@
                 </div>
             </div>
 
-            <!-- VIEW: Admin -->
-            <div id="view-admin" class="view-section">
-                <div class="empty-state-msg" style="margin-top: 20vh;">
-                    <h3>管理员录题工作台建设中...</h3>
-                    <p>Admin Panel Coming Soon</p>
-                </div>
-            </div>
+
 
             <div id="loading-indicator" class="hidden">加载数据中...</div>
         </main>

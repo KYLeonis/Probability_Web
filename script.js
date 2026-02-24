@@ -291,6 +291,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="ghost-button ${isMistake ? 'active-mistake' : ''}" onclick="window.markAsWrong('${q.id}', this)" id="btn-mistake-${q.id}">
                         ${isMistake ? '❌ 已记为错题' : '❌ 记为错题'}
                     </button>
+                    <button class="ghost-button export-btn" title="复制 Markdown" onclick="window.exportToMarkdown('${q.id}')">📝 Markdown</button>
+                    <button class="ghost-button export-btn" title="保存为 PDF" onclick="window.exportToPdf('${q.id}')">📄 PDF</button>
                 </div>
                 <div id="ans-${q.id}" class="answer-section">
                     <div class="answer-content">${q.answer}</div>
@@ -524,6 +526,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    window.exportToMarkdown = function (questionId) {
+        const q = state.questions.find(item => item.id === questionId);
+        if (!q) return;
+
+        const tagsStr = (q.tags || []).map(t => `#${t}`).join(' ');
+        const mdContent = `### 📝 概率论复习笔记\n> **题目来源**：${q.paper || '未知'}\n> **标签**：${tagsStr}\n\n**【题目】**：\n${q.content}\n\n---\n**【解析】**：\n${q.answer}`;
+
+        navigator.clipboard.writeText(mdContent).then(() => {
+            if (window.showToast) {
+                window.showToast('✅ Markdown 笔记已复制');
+            } else {
+                alert('✅ Markdown 笔记已复制');
+            }
+        }).catch(err => console.error('复制失败', err));
+    };
+
+    window.exportToPdf = function (questionId) {
+        const card = document.querySelector(`.question-card[data-id="${questionId}"]`);
+        if (!card) return;
+
+        // 1. 展开解析以确保被打印
+        const answerSection = card.querySelector('.answer-section');
+        const wasExpanded = answerSection.style.maxHeight && answerSection.style.maxHeight !== '0px';
+        if (!wasExpanded) {
+            answerSection.style.maxHeight = answerSection.scrollHeight + 'px';
+            answerSection.style.opacity = '1';
+        }
+
+        // 2. 标记打印目标
+        document.body.classList.add('print-mode');
+        card.classList.add('print-target');
+
+        // 3. 呼出打印机 (用户可选择另存为 PDF)
+        setTimeout(() => {
+            window.print();
+
+            // 4. 清理现场
+            document.body.classList.remove('print-mode');
+            card.classList.remove('print-target');
+            if (!wasExpanded) {
+                answerSection.style.maxHeight = '0px';
+                answerSection.style.opacity = '0';
+            }
+        }, 300); // 略微延迟等待解析动画展开和渲染
+    };
+
+
     // View Switching Logic (New)
     dom.navButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -554,10 +603,111 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Search Input
+    // --- 升级版：智能混合搜索与联想引擎 ---
     dom.searchInput.addEventListener('input', (e) => {
-        state.filters.searchQuery = e.target.value;
+        const query = e.target.value.trim().toLowerCase();
+        state.filters.searchQuery = query;
+
+        // 1. 触发底部列表的实时过滤
         applyFilters();
+
+        // 2. 触发下拉联想菜单
+        const suggestionsBox = document.getElementById('search-suggestions');
+        if (!suggestionsBox) return;
+
+        if (!query) {
+            suggestionsBox.classList.add('hidden');
+            return;
+        }
+
+        // 获取当前作用域的题目池 (严格遵循 Scope)
+        let pool = state.questions;
+        if (state.filters.scope === 'current' && state.filters.activeCategory) {
+            if (state.filters.type === 'paper') {
+                pool = pool.filter(q => q.paper === state.filters.activeCategory);
+            } else {
+                pool = pool.filter(q => q.tags && q.tags.includes(state.filters.activeCategory));
+            }
+        }
+
+        // 匹配 Tag
+        const matchedTags = new Set();
+        pool.forEach(q => {
+            if (q.tags) q.tags.forEach(t => {
+                if (t.toLowerCase().includes(query)) matchedTags.add(t);
+            });
+        });
+        const topTags = Array.from(matchedTags).slice(0, 3);
+
+        // 匹配题目片段
+        const matchedQuestions = pool.filter(q =>
+            (q.content + (q.answer || '') + (q.paper || '')).toLowerCase().includes(query)
+        ).slice(0, 4);
+
+        // 渲染菜单 HTML
+        if (topTags.length === 0 && matchedQuestions.length === 0) {
+            suggestionsBox.innerHTML = '<div class="suggestion-empty">未找到相关内容</div>';
+        } else {
+            let html = '';
+            if (topTags.length > 0) {
+                html += '<div class="suggestion-group-title">🏷️ 相关知识点</div>';
+                topTags.forEach(tag => {
+                    html += `<div class="suggestion-item tag-item" data-tag="${tag}"><span>${tag}</span></div>`;
+                });
+            }
+            if (matchedQuestions.length > 0) {
+                html += '<div class="suggestion-group-title">📄 相关题目</div>';
+                matchedQuestions.forEach(q => {
+                    // 粗略去除 LaTeX 和 HTML 标签以显示摘要
+                    let snippet = q.content.replace(/<[^>]+>/g, '').replace(/\$/g, '').substring(0, 25) + '...';
+                    let paperTag = q.paper ? q.paper.replace('2024-2025第一学期', '24秋').replace('2023-2024第二学期', '24春') : '未知';
+                    html += `<div class="suggestion-item q-item" data-id="${q.id}">
+                                <span class="q-snippet">${snippet}</span>
+                                <span class="q-source-tag">#${paperTag}</span>
+                             </div>`;
+                });
+            }
+            suggestionsBox.innerHTML = html;
+        }
+        suggestionsBox.classList.remove('hidden');
+    });
+
+    // 处理联想菜单的点击交互 (事件代理)
+    document.addEventListener('click', (e) => {
+        const searchWrapper = document.getElementById('search-wrapper');
+        const suggestionsBox = document.getElementById('search-suggestions');
+        if (!searchWrapper || !suggestionsBox) return;
+
+        // 1. 点击外部隐藏菜单
+        if (!searchWrapper.contains(e.target)) {
+            suggestionsBox.classList.add('hidden');
+            return;
+        }
+
+        // 2. 点击 Tag 项：将搜索词替换为 Tag 并过滤
+        const tagItem = e.target.closest('.tag-item');
+        if (tagItem) {
+            const tag = tagItem.dataset.tag;
+            dom.searchInput.value = tag;
+            state.filters.searchQuery = tag;
+            suggestionsBox.classList.add('hidden');
+            applyFilters();
+        }
+
+        // 3. 点击题目项：精准狙击单道题目
+        const qItem = e.target.closest('.q-item');
+        if (qItem) {
+            const qId = qItem.dataset.id;
+            dom.searchInput.value = ''; // 清空输入框以防干扰
+            state.filters.searchQuery = '';
+            suggestionsBox.classList.add('hidden');
+
+            // 直接渲染这唯一的一道题
+            const singleQuestion = state.questions.filter(q => q.id === qId);
+            state.filteredQuestions = singleQuestion;
+            // eslint-disable-next-line no-undef
+            renderQuestions(singleQuestion);
+        }
     });
 
     // --- Custom Dropdown Logic ---
@@ -1101,4 +1251,63 @@ document.addEventListener('DOMContentLoaded', () => {
             toast.style.opacity = '0';
         }, 2000);
     }
+
+    // 批量导出为 Markdown
+    window.exportAllToMarkdown = function (storageKey) {
+        const ids = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        if (ids.length === 0) {
+            alert('当前列表为空，没有可导出的题目。');
+            return;
+        }
+
+        const questionsToExport = state.questions.filter(q => ids.includes(q.id));
+        let mdContent = `# 📝 概率论复习导出资料\n\n`;
+
+        questionsToExport.forEach((q, index) => {
+            const tagsStr = (q.tags || []).map(t => `#${t}`).join(' ');
+            mdContent += `### 第 ${index + 1} 题\n> **来源**：${q.paper || '未知'} | **标签**：${tagsStr}\n\n**【题目内容】**：\n${q.content}\n\n---\n**【详细解析】**：\n${q.answer}\n\n<br><br>\n\n`;
+        });
+
+        navigator.clipboard.writeText(mdContent).then(() => {
+            if (window.showToast) window.showToast('✅ 全部题目已成功导出为 Markdown 到剪贴板');
+            else alert('✅ 全部题目已成功导出为 Markdown 到剪贴板');
+        }).catch(err => console.error('复制失败', err));
+    };
+
+    // 批量导出为 PDF
+    window.exportAllToPdf = function (viewId) {
+        const container = document.querySelector(`#${viewId} .question-list-container`);
+        if (!container || container.children.length === 0 || container.querySelector('.empty-state-msg')) {
+            alert('当前列表为空，无法导出 PDF。');
+            return;
+        }
+
+        // 1. 展开当前列表下所有的解析，确保打印完整
+        const answerSections = container.querySelectorAll('.answer-section');
+        const toggledSections = [];
+        answerSections.forEach(sec => {
+            if (!sec.style.maxHeight || sec.style.maxHeight === '0px') {
+                sec.style.maxHeight = sec.scrollHeight + 'px';
+                sec.style.opacity = '1';
+                toggledSections.push(sec);
+            }
+        });
+
+        // 2. 打上打印专属标记
+        document.body.classList.add('print-mode');
+        container.classList.add('print-container');
+
+        // 3. 呼出系统打印机 (允许用户另存为 PDF)
+        setTimeout(() => {
+            window.print();
+
+            // 4. 取消标记，恢复现场
+            document.body.classList.remove('print-mode');
+            container.classList.remove('print-container');
+            toggledSections.forEach(sec => {
+                sec.style.maxHeight = '0px';
+                sec.style.opacity = '0';
+            });
+        }, 500); // 预留 500ms 等待 CSS 动画展开和重绘
+    };
 });
