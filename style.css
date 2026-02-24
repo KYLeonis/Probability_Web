@@ -1739,3 +1739,170 @@ body.dark-mode .katex-display:hover {
     color: var(--text-secondary);
     font-size: 0.9rem;
 }
+
+/* ==========================================
+   试卷期末物理版式复刻 (B4 Size + Binding Line)
+   ========================================== */
+
+.exam-paper-container {
+    display: flex;
+    width: 100%;
+    /* 严格模拟国内试卷学术字体 */
+    font-family: "Times New Roman", "SimSun", "STSong", serif !important;
+    color: #000;
+    line-height: 1.6;
+}
+
+/* 试卷标题区域：利用 Flexbox 与 Absolute 实现绝对水平对齐 */
+.exam-header-title {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+/* 缩小大标题 */
+.exam-header-title h1 {
+    font-size: 18pt !important;
+    /* 从 22pt 缩小 */
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin: 0;
+}
+
+/* 右上角绝对定位警告语 */
+.top-right-warning {
+    position: absolute;
+    right: 0;
+    font-size: 14pt !important;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+
+/* 试卷头部信息区：增加粗分割线并缩小字号 */
+.exam-info-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px !important;
+    margin-bottom: 12px !important;
+    padding-bottom: 12px !important;
+    border-bottom: 2px solid #000 !important;
+    /* 灵魂粗分割线 */
+    font-size: 9.5pt !important;
+    /* 整体字号缩小 */
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.underline-field {
+    display: inline-block;
+    border-bottom: 1px solid #000;
+    text-align: center;
+    line-height: 1.2;
+    min-height: 16px;
+    padding: 0 4px;
+}
+
+/* 打分表 */
+.classic-score-table {
+    width: 70%;
+    margin: 0 auto 30px auto;
+    border-collapse: collapse;
+    text-align: center;
+    border: 2px solid #000;
+}
+
+.classic-score-table th,
+.classic-score-table td {
+    border: 1px solid #000;
+    padding: 10px;
+    font-size: 11pt;
+    font-weight: bold;
+}
+
+.classic-score-table td {
+    height: 40px;
+    /* 留出填分数的空白 */
+}
+
+/* 打印时覆盖并显示试卷 */
+@media print {
+    @page {
+        size: B4 landscape;
+        /* 关键：横向排版 */
+        margin: 15mm 20mm 20mm 20mm !important;
+        /* 增加纸张底边距 */
+    }
+
+    /* 1. 每一页都出现的固定页脚 (教务处注意事项) */
+    .exam-footer-notes {
+        position: fixed !important;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        margin: 0 !important;
+        padding-top: 8px !important;
+        padding-bottom: 5mm !important;
+        /* 留出离纸张边缘的物理距离 */
+        border-top: 1px solid #000 !important;
+        font-size: 9pt !important;
+        background: #fff !important;
+        /* 确保不透明，遮盖底层可能溢出的内容 */
+        text-align: center;
+        column-span: all;
+        /* 确保跨越双栏 */
+        z-index: 9999;
+    }
+
+    /* 2. 为主体区域预留底部空间，防止题目撞上固定页脚 */
+    .exam-main-area {
+        padding-bottom: 15mm !important;
+        /* 预留出足够的页脚高度 */
+    }
+
+    body.print-exam-mode * {
+        visibility: hidden;
+    }
+
+    body.print-exam-mode #mock-exam-paper,
+    body.print-exam-mode #mock-exam-paper * {
+        visibility: visible;
+    }
+
+    body.print-exam-mode #mock-exam-paper {
+        display: flex !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        /* 确保横向时高度能自然延展 */
+        height: auto;
+    }
+
+    /* ==========================================
+       新增：双栏对折核心引擎 (Multi-column)
+       ========================================== */
+    .exam-questions-body {
+        column-count: 2;
+        /* 强制分为左右两栏 */
+        column-gap: 30mm;
+        /* 中缝留出 3 厘米的对折/装订空白 */
+        column-rule: 1px dashed #999;
+        /* 中缝的虚线分割线，极具真实感 */
+        width: 100%;
+    }
+
+    /* 防止单道题目被极度尴尬地从中间切断（一半在左栏一半在右栏） */
+    .exam-q-item {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        -webkit-column-break-inside: avoid;
+    }
+}

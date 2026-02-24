@@ -1310,4 +1310,86 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }, 500); // 预留 500ms 等待 CSS 动画展开和重绘
     };
+
+    // --- Phase 6.1: 智能密卷生成引擎 (纯测试模式) ---
+    window.generateMockExam = function (storageKey) {
+        const ids = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        if (ids.length === 0) {
+            alert('当前列表为空，没有题目可供生成试卷。');
+            return;
+        }
+
+        const qs = state.questions.filter(q => ids.includes(q.id));
+
+        // 自动按题型分类器
+        const choiceQs = qs.filter(q => q.type === 'choice' || (q.type && q.type.includes('选择')));
+        const blankQs = qs.filter(q => q.type && q.type.includes('填空'));
+        const calcQs = qs.filter(q => !choiceQs.includes(q) && !blankQs.includes(q)); // 剩下的全归为解答/计算题
+
+        const container = document.getElementById('exam-questions-container');
+        if (!container) return alert('找不到试卷容器，请确保试卷版式 HTML 已正确注入。');
+
+        let html = '';
+        let globalIndex = 1;
+
+        // 一、选择题
+        if (choiceQs.length > 0) {
+            html += `<h3 style="font-size: 9pt; font-weight: bold; margin: 10px 0 6px 0;">一、 单项选择题（每小题3分）</h3>`;
+            choiceQs.forEach(q => {
+                html += `<div class="exam-q-item" style="margin-bottom: 12px; font-size: 9.5pt;">`;
+                html += `<div>${globalIndex++}. ${q.content} ( &nbsp;&nbsp;&nbsp;&nbsp; )</div>`;
+                if (q.options) {
+                    html += `<div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 8px; padding-left: 15px;">`;
+                    q.options.forEach(opt => html += `<span>${opt}</span>`);
+                    html += `</div>`;
+                }
+                html += `</div>`;
+            });
+        }
+
+        // 二、填空题
+        if (blankQs.length > 0) {
+            html += `<h3 style="font-size: 9pt; font-weight: bold; margin: 10px 0 6px 0;">二、 填空题（每小题3分）</h3>`;
+            blankQs.forEach(q => {
+                html += `<div class="exam-q-item" style="margin-bottom: 12px; font-size: 9.5pt;">`;
+                html += `<div>${globalIndex++}. ${q.content}</div>`;
+                html += `</div>`;
+            });
+        }
+
+        // 三、计算与解答题
+        if (calcQs.length > 0) {
+            html += `<h3 style="font-size: 9pt; font-weight: bold; margin: 10px 0 6px 0;">三、 计算与解答题（请写出详细的推导和计算过程）</h3>`;
+            calcQs.forEach(q => {
+                html += `<div class="exam-q-item" style="margin-bottom: 12px; font-size: 9.5pt; page-break-inside: avoid;">`;
+                html += `<div>${globalIndex++}. ${q.content}</div>`;
+                html += `</div>`; // 取消大面积留白，实现紧凑试题卷
+            });
+        }
+
+        // 注入 DOM
+        container.innerHTML = html;
+
+        // 呼叫 KaTeX 渲染试卷内的公式
+        if (window.renderMathInElement) {
+            window.renderMathInElement(container, {
+                delimiters: [
+                    { left: "$$", right: "$$", display: true },
+                    { left: "$", right: "$", display: false },
+                    { left: "\\(", right: "\\)", display: false },
+                    { left: "\\[", right: "\\]", display: true }
+                ]
+            });
+        }
+
+        // 开启试卷专属打印模式 (隐藏网页，显现试卷)
+        document.body.classList.add('print-exam-mode');
+
+        // 延时等待 KaTeX 渲染完成并弹出打印机
+        setTimeout(() => {
+            window.print();
+            // 打印结束后关闭密卷模式，恢复正常网页
+            document.body.classList.remove('print-exam-mode');
+        }, 800);
+    };
 });

@@ -245,6 +245,9 @@
                     style="display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 16px;">
                     <h2 style="margin:0;">我的错题本</h2>
                     <div class="bulk-export-group">
+                        <button class="ghost-button"
+                            style="color: #D97706; border-color: rgba(217, 119, 6, 0.3); background: rgba(245, 158, 11, 0.1);"
+                            onclick="window.generateMockExam('userMistakes')">🎓 生成考前密卷</button>
                         <button class="ghost-button" onclick="window.exportAllToMarkdown('userMistakes')">📝 导出
                             Markdown</button>
                         <button class="ghost-button" onclick="window.exportAllToPdf('view-mistakes')">📄 导出 PDF</button>
@@ -261,6 +264,9 @@
                     style="display: flex; justify-content: flex-start; align-items: center; flex-wrap: wrap; gap: 16px;">
                     <h2 style="margin:0;">收藏真题</h2>
                     <div class="bulk-export-group">
+                        <button class="ghost-button"
+                            style="color: #D97706; border-color: rgba(217, 119, 6, 0.3); background: rgba(245, 158, 11, 0.1);"
+                            onclick="window.generateMockExam('userFavorites')">🎓 生成考前密卷</button>
                         <button class="ghost-button" onclick="window.exportAllToMarkdown('userFavorites')">📝 导出
                             Markdown</button>
                         <button class="ghost-button" onclick="window.exportAllToPdf('view-favorites')">📄 导出
@@ -311,6 +317,44 @@
 
             <div id="loading-indicator" class="hidden">加载数据中...</div>
         </main>
+    </div>
+
+    <!-- 试卷 HTML 骨架 (专属冲刺卷模板) -->
+    <div id="mock-exam-paper" class="exam-paper-container" style="display: none;">
+        <div class="exam-main-area" style="width: 100%;">
+
+            <div class="exam-header-title">
+                <h1>合肥工业大学试卷(专属冲刺版)</h1>
+                <span class="top-right-warning">本页答题无效</span>
+            </div>
+
+            <div class="exam-info-header">
+                <div class="info-row">
+                    <span><strong>2024～2025</strong> 学年第 <strong>一</strong> 学期</span>
+                    <span>课程代码 <span class="underline-field" style="width: 80px;">1400091B</span></span>
+                    <span>课程名称 <span class="underline-field" style="width: 140px;">概率论与数理统计</span></span>
+                    <span>学分 <span class="underline-field" style="width: 30px;">3</span></span>
+                    <span>课程性质: <strong>必修</strong></span>
+                    <span>考试形式: <strong>闭卷</strong></span>
+                </div>
+                <div class="info-row">
+                    <span>专业班级(教学班) <span class="underline-field" style="width: 160px;"></span></span>
+                    <span>考试日期 <span class="underline-field" style="width: 100px;">2025.1.15</span></span>
+                    <span>命题教师 <span class="underline-field" style="width: 60px;">集 体</span></span>
+                    <span>系(所或教研室) 主任审批签名 <span class="underline-field" style="width: 120px;"></span></span>
+                </div>
+            </div>
+
+
+
+            <div id="exam-questions-container" class="exam-questions-body">
+            </div>
+
+            <div class="exam-footer-notes">
+                命题教师注意事项：1、主考教师必须于考试一周前将“试卷 A”、“试卷 B”经教研室主任审批签字后送教务科印刷。&nbsp;&nbsp;&nbsp;&nbsp;2、请命题教师用黑色水笔工整地书写题目或用 A4
+                纸横式打印贴在试卷版芯中。
+            </div>
+        </div>
     </div>
 
     <!-- Login Modal -->
