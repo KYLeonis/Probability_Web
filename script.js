@@ -140,20 +140,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetView = document.getElementById(viewId);
         if (targetView) {
             targetView.classList.add('active');
-        }
-
-        // 3. Update Sidebar Active State
-        dom.navButtons.forEach(btn => {
-            if (btn.dataset.view === viewId) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
+            // --- Phase 4.4 / 4.3.2: Trigger Appropriate Renders ---
+            if (viewId === 'view-stats') {
+                renderStatisticsView();
+            } else if (viewId === 'view-mistakes') {
+                renderLocalList('mistakes-list', 'userMistakes');
+            } else if (viewId === 'view-favorites') {
+                renderLocalList('favorites-list', 'userFavorites');
             }
-        });
 
-        // 4. Mobile: Close sidebar after switch
-        if (window.innerWidth <= 768) {
-            toggleSidebar(false);
+            // 3. Update Sidebar Active State
+            dom.navButtons.forEach(btn => {
+                if (btn.dataset.view === viewId) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // 4. Mobile: Close sidebar after switch
+            if (window.innerWidth <= 768) {
+                toggleSidebar(false);
+            }
         }
     }
 
@@ -247,6 +255,22 @@ document.addEventListener('DOMContentLoaded', () => {
             `<span class="tag" data-tag="${tag}">${tag}</span>`
         ).join('');
 
+        // Options HTML (如果题型是选择题)
+        let optionsHtml = '';
+        if (q.type === 'choice' && q.options) {
+            optionsHtml = '<div class="options-container">';
+            q.options.forEach((opt, idx) => {
+                optionsHtml += `<button class="option-btn" onclick="window.handleOptionClick(this, '${q.id}', ${idx}, ${q.correctOption})">${opt}</button>`;
+            });
+            optionsHtml += '</div>';
+        }
+
+        // Local State
+        const favs = JSON.parse(localStorage.getItem('userFavorites') || '[]');
+        const mistakes = JSON.parse(localStorage.getItem('userMistakes') || '[]');
+        const isFav = favs.includes(q.id);
+        const isMistake = mistakes.includes(q.id);
+
         card.innerHTML = `
             <div class="card-header">
                 <div class="card-tags">${tagsHtml}</div>
@@ -255,10 +279,19 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="question-content">
                 ${q.content}
             </div>
+            ${optionsHtml}
             <div class="card-action">
-                <button class="ghost-button" onclick="window.toggleAnswer('${q.id}')">
-                    查看解析
-                </button>
+                <div class="card-action-group">
+                    <button class="ghost-button" onclick="window.toggleAnswer('${q.id}')">
+                        查看解析
+                    </button>
+                    <button class="ghost-button ${isFav ? 'active-fav' : ''}" onclick="window.toggleFavorite('${q.id}', this)" id="btn-fav-${q.id}">
+                        ${isFav ? '⭐ 已收藏' : '⭐ 收藏'}
+                    </button>
+                    <button class="ghost-button ${isMistake ? 'active-mistake' : ''}" onclick="window.markAsWrong('${q.id}', this)" id="btn-mistake-${q.id}">
+                        ${isMistake ? '❌ 已记为错题' : '❌ 记为错题'}
+                    </button>
+                </div>
                 <div id="ans-${q.id}" class="answer-section">
                     <div class="answer-content">${q.answer}</div>
                 </div>
@@ -282,6 +315,114 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Render Math immediately after insertion
         renderMath();
+    }
+
+    // --- Phase 4.4 / 4.3.2: Render Local Lists for Action Centers ---
+    function renderLocalList(containerId, storageKey) {
+        const listContainer = document.getElementById(containerId);
+        if (!listContainer) return;
+
+        const storedIds = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        listContainer.innerHTML = '';
+
+        if (storedIds.length === 0) {
+            listContainer.innerHTML = `
+                <div class="empty-state-msg">
+                    <h3>太棒了！或者...还没开始记录？</h3>
+                    <p>这里空空如也，快去刷题大厅探索吧。</p>
+                </div>
+            `;
+            return;
+        }
+
+        const filteredQuestions = state.questions.filter(q => storedIds.includes(q.id));
+        const fragment = document.createDocumentFragment();
+
+        filteredQuestions.forEach(q => {
+            const card = createQuestionCard(q);
+            fragment.appendChild(card);
+        });
+
+        listContainer.appendChild(fragment);
+
+        // 强制触发局部 KaTeX 渲染并注入分隔符
+        if (window.renderMathInElement) {
+            window.renderMathInElement(listContainer, {
+                delimiters: [
+                    { left: "$$", right: "$$", display: true },
+                    { left: "$", right: "$", display: false },
+                    { left: "\\(", right: "\\)", display: false },
+                    { left: "\\[", right: "\\]", display: true }
+                ]
+            });
+        }
+    }
+
+    // --- Phase 4.4: Render Macro Statistics Dashboard ---
+    function renderStatisticsView() {
+        const mistakes = JSON.parse(localStorage.getItem('userMistakes') || '[]');
+        const favorites = JSON.parse(localStorage.getItem('userFavorites') || '[]');
+
+        // 1. Update Hero Stats
+        const mistakesCountEl = document.getElementById('stat-mistakes-count');
+        const favoritesCountEl = document.getElementById('stat-favorites-count');
+
+        if (mistakesCountEl) mistakesCountEl.textContent = mistakes.length;
+        if (favoritesCountEl) favoritesCountEl.textContent = favorites.length;
+
+        // 2. Render Mock Community Stats
+        const communityList = document.getElementById('community-stats-list');
+        if (communityList) {
+            communityList.innerHTML = `
+                <li><span class="rank-badge">#1</span> 2023-2024 第1学期 A卷 填空题 3 —— 全网错误率 82%</li>
+                <li><span class="rank-badge">#2</span> 第3章 多维随机变量 解答题 1 —— 全网错误率 75%</li>
+                <li><span class="rank-badge">#3</span> 2022-2023 第2学期 B卷 选择题 5 —— 全网错误率 68%</li>
+            `;
+        }
+
+        // 3. Render Personal Insights (Tag Analysis)
+        const insightsContent = document.getElementById('personal-insights-content');
+        if (insightsContent) {
+            insightsContent.innerHTML = '';
+            if (mistakes.length === 0) {
+                insightsContent.innerHTML = '<p class="empty-state-msg">暂无错题数据，无法生成分析报告。</p>';
+                return;
+            }
+
+            // Extract tags from mistake questions
+            const tagCounts = {};
+            let totalTags = 0;
+            state.questions.forEach(q => {
+                if (mistakes.includes(q.id) && q.tags) {
+                    q.tags.forEach(tag => {
+                        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                        totalTags++;
+                    });
+                }
+            });
+
+            const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 3);
+
+            if (sortedTags.length === 0) {
+                insightsContent.innerHTML = '<p class="empty-state-msg">错题缺乏标签数据，无法进行知识点提取。</p>';
+                return;
+            }
+
+            let html = '<p>你的错题主要集中在以下知识点：</p>';
+            sortedTags.forEach(([tag, count]) => {
+                const percentage = Math.round((count / Math.max(totalTags, 1)) * 100);
+                html += `
+                    <div class="insight-tag-bar">
+                        <div class="insight-tag-name" title="${tag}">${tag}</div>
+                        <div class="insight-progress-track">
+                            <div class="insight-progress-fill" style="width: ${percentage}%"></div>
+                        </div>
+                        <div class="insight-tag-count">${count}题</div>
+                    </div>
+                `;
+            });
+            insightsContent.innerHTML = html;
+        }
     }
 
     function renderSidebar() {
@@ -588,16 +729,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (authRequiredBtns.length > 0) {
-        authRequiredBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                // Intercept navigation for guarded routes
+    // --- Global Auth Guard ---
+    document.body.addEventListener('click', (e) => {
+        const authBtn = e.target.closest('.auth-required');
+        if (authBtn) {
+            if (!localStorage.getItem('currentUser')) {
                 e.preventDefault();
                 e.stopPropagation();
                 openLoginModal();
-            });
-        });
-    }
+            }
+        }
+    });
 
     // --- Init ---
     init();
@@ -626,6 +768,83 @@ document.addEventListener('DOMContentLoaded', () => {
         avatarContainers.forEach(container => {
             container.innerHTML = contentToRender;
         });
+    };
+
+    // --- Phase 4.1: 本地错题与收藏管理 ---
+    window.toggleFavorite = function (questionId, btnElement) {
+        if (!localStorage.getItem('currentUser')) {
+            openLoginModal();
+            return;
+        }
+
+        let favs = JSON.parse(localStorage.getItem('userFavorites') || '[]');
+        const index = favs.indexOf(questionId);
+
+        if (index === -1) {
+            favs.push(questionId);
+            if (btnElement) {
+                btnElement.classList.add('active-fav');
+                btnElement.innerHTML = '⭐ 已收藏';
+            }
+        } else {
+            favs.splice(index, 1);
+            if (btnElement) {
+                btnElement.classList.remove('active-fav');
+                btnElement.innerHTML = '⭐ 收藏';
+            }
+        }
+        localStorage.setItem('userFavorites', JSON.stringify(favs));
+    };
+
+    window.markAsWrong = function (questionId, btnElement) {
+        if (!localStorage.getItem('currentUser')) {
+            openLoginModal();
+            return;
+        }
+
+        let mistakes = JSON.parse(localStorage.getItem('userMistakes') || '[]');
+        const index = mistakes.indexOf(questionId);
+
+        if (index === -1) {
+            mistakes.push(questionId);
+            if (btnElement) {
+                btnElement.classList.add('active-mistake');
+                btnElement.innerHTML = '❌ 已记为错题';
+            }
+        } else {
+            mistakes.splice(index, 1);
+            if (btnElement) {
+                btnElement.classList.remove('active-mistake');
+                btnElement.innerHTML = '❌ 记为错题';
+            }
+        }
+        localStorage.setItem('userMistakes', JSON.stringify(mistakes));
+    };
+
+    window.handleOptionClick = function (btnElement, questionId, selectedIdx, correctIdx) {
+        // 锁定所有同组按钮
+        const container = btnElement.closest('.options-container');
+        const allBtns = container.querySelectorAll('.option-btn');
+        allBtns.forEach(b => b.disabled = true);
+
+        if (selectedIdx === correctIdx) {
+            btnElement.classList.add('correct');
+        } else {
+            btnElement.classList.add('wrong');
+            // 同时标出正确的
+            if (allBtns[correctIdx]) {
+                allBtns[correctIdx].classList.add('correct');
+            }
+
+            // 如果答错了，自动触发记为错题逻辑
+            let mistakes = JSON.parse(localStorage.getItem('userMistakes') || '[]');
+            if (!mistakes.includes(questionId)) {
+                const mistakeBtn = document.getElementById(`btn-mistake-${questionId}`);
+                window.markAsWrong(questionId, mistakeBtn);
+            }
+        }
+
+        // 如果启用了 KaTeX，可能需要渲染选项的公式，但通常初始化时已渲染
     };
 
     // 初始化调用一次，传入默认昵称测试
@@ -818,4 +1037,68 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 初始化应用状态 UI
     renderUserProfile();
+
+    // ==========================================
+    // 5.1 全面公式复制逻辑 (支持行内与块状)
+    // ==========================================
+    document.body.addEventListener('click', async (e) => {
+        // 寻找最近的 .katex 元素
+        const mathElement = e.target.closest('.katex');
+        if (!mathElement) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        // 在内部寻找原始 TeX 代码
+        const annotation = mathElement.querySelector('annotation[encoding="application/x-tex"]');
+        if (annotation && annotation.textContent) {
+            const rawTex = annotation.textContent.trim();
+            try {
+                await navigator.clipboard.writeText(rawTex);
+
+                // 成功反馈：简单的视觉闪烁
+                const originalBg = mathElement.style.backgroundColor;
+                mathElement.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+
+                // 复用或新建一个轻量 Toast 提示
+                showToast('✅ LaTeX 已复制');
+
+                setTimeout(() => {
+                    mathElement.style.backgroundColor = originalBg;
+                }, 1000);
+            } catch (err) {
+                console.error('Copy failed:', err);
+            }
+        }
+    });
+
+    // 辅助函数：显示 Toast
+    function showToast(msg) {
+        let toast = document.getElementById('math-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'math-toast';
+            toast.style.position = 'fixed';
+            toast.style.bottom = '20px';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
+            toast.style.background = 'rgba(0,0,0,0.8)';
+            toast.style.color = '#fff';
+            toast.style.padding = '10px 20px';
+            toast.style.borderRadius = '8px';
+            toast.style.zIndex = '9999';
+            toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+            toast.style.transition = 'opacity 0.3s ease';
+            document.body.appendChild(toast);
+        }
+        toast.textContent = msg;
+        toast.style.opacity = '1';
+
+        // 清除旧的 timeout 避免快速点击时闪烁
+        if (toast.hideTimeout) clearTimeout(toast.hideTimeout);
+
+        toast.hideTimeout = setTimeout(() => {
+            toast.style.opacity = '0';
+        }, 2000);
+    }
 });

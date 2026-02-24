@@ -133,10 +133,10 @@
                     </div>
                     <div class="dropdown-divider"></div>
                     <div class="dropdown-menu">
-                        <button class="dropdown-item"
+                        <button class="nav-btn auth-required" data-view="view-mistakes"
+                            onclick="document.querySelector('[data-view=\'view-mistakes\']').click()">📊 我的错题</button>
+                        <button class="nav-btn auth-required" data-view="view-favorites"
                             onclick="document.querySelector('[data-view=\'view-favorites\']').click()">⭐ 收藏题目</button>
-                        <button class="dropdown-item"
-                            onclick="document.querySelector('[data-view=\'view-stats\']').click()">📈 数据统计</button>
                         <div class="dropdown-divider"></div>
                         <button id="login-trigger-btn" class="dropdown-item">登录 / 注册</button>
                     </div>
@@ -248,27 +248,58 @@
                 </div>
             </div>
 
-            <!-- VIEW: Dashboard -->
-            <div id="view-dashboard" class="view-section">
-                <div class="empty-state-msg" style="margin-top: 20vh;">
-                    <h3>个人数据看板与错题本建设中...</h3>
-                    <p>Coming Soon</p>
+            <!-- VIEW: Mistakes (Action Center) -->
+            <div id="view-mistakes" class="view-section">
+                <div class="view-header">
+                    <h2>我的错题本</h2>
+                </div>
+                <div id="mistakes-list" class="question-list-container">
+                    <!-- 动态复用卡片渲染 -->
                 </div>
             </div>
 
             <!-- VIEW: Favorites (New) -->
             <div id="view-favorites" class="view-section">
-                <div class="empty-state-msg" style="margin-top: 20vh;">
-                    <h3>收藏真题建设中...</h3>
-                    <p>Coming Soon</p>
+                <div class="view-header">
+                    <h2>收藏真题</h2>
+                </div>
+                <div id="favorites-list" class="question-list-container">
+                    <!-- 动态复用卡片渲染 -->
                 </div>
             </div>
 
-            <!-- VIEW: Stats (New) -->
+            <!-- VIEW: Stats (Macro Dashboard) -->
             <div id="view-stats" class="view-section">
-                <div class="empty-state-msg" style="margin-top: 20vh;">
-                    <h3>全维数据统计与弱项分析分析...</h3>
-                    <p>Coming Soon</p>
+                <div class="stats-hero">
+                    <div class="stat-card">
+                        <div class="stat-title">错题总数</div>
+                        <div class="stat-value" id="stat-mistakes-count">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">收藏总数</div>
+                        <div class="stat-value" id="stat-favorites-count">0</div>
+                    </div>
+                </div>
+
+                <div class="stats-modules">
+                    <div class="stats-module">
+                        <div class="module-header">
+                            <span class="module-icon">🔥</span>
+                            <h3>全社区数据：高频错题 TOP 3</h3>
+                        </div>
+                        <ul id="community-stats-list" class="stats-item-list">
+                            <!-- Mock Data Interpolated by JS -->
+                        </ul>
+                    </div>
+                    <div class="stats-module">
+                        <div class="module-header">
+                            <span class="module-icon">🎯</span>
+                            <h3>个人薄弱点分布 (Personal Insights)</h3>
+                        </div>
+                        <div id="personal-insights-content" class="insights-content">
+                            <!-- Chart or Text Interpolated by JS -->
+                        </div>
+                    </div>
                 </div>
             </div>
 

@@ -21,5 +21,23 @@
     ],
     "content": "设三维随机向量 $\\boldsymbol{X} = (X_1, X_2, X_3)^T$ 服从 $N(\\boldsymbol{\\mu}, \\boldsymbol{\\Sigma})$，其中：$$ \\boldsymbol{\\mu} = \\begin{pmatrix} 1 \\\\ -1 \\\\ 2 \\end{pmatrix}, \\quad \\boldsymbol{\\Sigma} = \\begin{pmatrix} 4 & 1 & -1 \\\\ 1 & 2 & 1 \\\\ -1 & 1 & 2 \\end{pmatrix} $$ <br>定义 $Y = X_1 - 2X_2 + X_3$。求 $D(Y)$。",
     "answer": "解析：<br>令 $\\boldsymbol{a} = (1, -2, 1)^T$，<br> $$ D(Y) = \\boldsymbol{a}^T \\boldsymbol{\\Sigma} \\boldsymbol{a} = \\begin{pmatrix} 1 & -2 & 1 \\end{pmatrix} \\begin{pmatrix} 1 \\\\ -2 \\\\ -1 \\end{pmatrix} = 4 $$"
+  },
+  {
+    "id": "test_choice_03",
+    "paper": "2024-2025第一学期A卷",
+    "type": "choice",
+    "tags": [
+      "概率",
+      "独立性"
+    ],
+    "content": "已知事件A和B相互独立，且 $P(A) = 0.5$, $P(B) = 0.4$，求 $P(A \\cup B)$",
+    "options": [
+      "A. 0.9",
+      "B. 0.7",
+      "C. 0.2",
+      "D. 0.1"
+    ],
+    "correctOption": 1,
+    "answer": "解析：<br>由于A与B独立，所以 $P(AB) = P(A)P(B) = 0.5 \\times 0.4 = 0.2$。<br> 根据加法公式 $P(A \\cup B) = P(A) + P(B) - P(AB) = 0.5 + 0.4 - 0.2 = 0.7$。<br>故选 B。"
   }
 ]

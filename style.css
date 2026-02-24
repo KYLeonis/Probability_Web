@@ -1181,3 +1181,323 @@ body.is-offline {
         padding: 0 16px 40px 16px;
     }
 }
+
+/* --- Phase 4.1.2: Mixed Question Types & Local State (Modern UI Upgrade) --- */
+.options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+    margin-bottom: 24px;
+}
+
+.option-btn {
+    text-align: left;
+    padding: 14px 20px;
+    border: 1px solid var(--border-color);
+    background-color: transparent;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+}
+
+.option-btn:hover:not(:disabled) {
+    border-color: var(--primary-color);
+    background-color: rgba(139, 0, 0, 0.04);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.option-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* Dark mode subtle hover for options */
+body.dark-mode .option-btn:hover:not(:disabled) {
+    background-color: rgba(255, 100, 100, 0.08);
+}
+
+/* Correct Status */
+.option-btn.correct {
+    border-color: #10B981;
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #065F46;
+}
+
+body.dark-mode .option-btn.correct {
+    color: #34D399;
+}
+
+/* Wrong Status */
+.option-btn.wrong {
+    border-color: #EF4444;
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #991B1B;
+}
+
+body.dark-mode .option-btn.wrong {
+    color: #F87171;
+}
+
+/* Action Group */
+.card-action-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* Active Favorite Button */
+.ghost-button.active-fav {
+    color: #D97706;
+    background-color: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+body.dark-mode .ghost-button.active-fav {
+    color: #FBBF24;
+}
+
+/* Active Mistake Button (Using Primary Brand Color) */
+.ghost-button.active-mistake {
+    color: var(--primary-color);
+    background-color: rgba(139, 0, 0, 0.08);
+    border-color: rgba(139, 0, 0, 0.2);
+}
+
+body.dark-mode .ghost-button.active-mistake {
+    color: #F87171;
+    background-color: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* --- Phase 4.2: Statistics View Styling --- */
+.stats-hero {
+    display: flex;
+    gap: 16px;
+    padding: 24px 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    flex: 1;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+body.dark-mode .stat-card {
+    background: var(--bg-color);
+}
+
+.stat-title {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.stats-list-header {
+    padding: 0 16px;
+    margin-bottom: 16px;
+    color: var(--text-main);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 12px;
+}
+
+#statistics-list {
+    padding: 0 16px 40px 16px;
+}
+
+/* --- Phase 4.4: Macro Dashboard & Local Lists --- */
+.view-header {
+    padding: 24px 16px 16px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 16px;
+}
+
+.view-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.stats-modules {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 0 16px 40px;
+}
+
+.stats-module {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+body.dark-mode .stats-module {
+    background: var(--bg-color);
+}
+
+.module-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.module-icon {
+    font-size: 1.2rem;
+}
+
+.module-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.stats-item-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.stats-item-list li {
+    padding: 12px;
+    background: rgba(139, 0, 0, 0.04);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 0.95rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    line-height: 1.5;
+}
+
+body.dark-mode .stats-item-list li {
+    background: rgba(255, 100, 100, 0.05);
+}
+
+.rank-badge {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+.insights-content {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.insight-tag-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.insight-tag-name {
+    width: 100px;
+    font-weight: 500;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.insight-progress-track {
+    flex: 1;
+    height: 8px;
+    background: var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.insight-progress-fill {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+.insight-tag-count {
+    width: 30px;
+    text-align: right;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* ==========================================
+   5.1 可复制数学公式交互样式 (Comprehensive Math Copy)
+   ========================================== */
+/* 基础容器样式调整 */
+.katex {
+    cursor: pointer;
+    position: relative;
+    padding: 2px 4px;
+    /* 行内公式给予微小内边距 */
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+/* 块状公式保持原有大框感 */
+.katex-display .katex {
+    padding: 12px;
+    display: block;
+}
+
+/* 统一的 Hover 效果：淡蓝色背景 */
+.katex:hover {
+    background-color: rgba(59, 130, 246, 0.12) !important;
+    outline: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* 块状公式保持粗边框 */
+.katex-display:hover {
+    outline: 2px solid rgba(59, 130, 246, 0.4);
+    background-color: rgba(59, 130, 246, 0.08) !important;
+}
+
+body.dark-mode .katex:hover {
+    background-color: rgba(96, 165, 250, 0.15) !important;
+    outline: 1px solid rgba(96, 165, 250, 0.4);
+}
+
+body.dark-mode .katex-display:hover {
+    background-color: rgba(96, 165, 250, 0.1) !important;
+}
+
+/* 悬停时在公式下方显示微小的文字提示 (仅限块状) */
+.katex-display:hover::after {
+    content: '点击复制 LaTeX 代码';
+    display: block;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--primary-color);
+    margin-top: 8px;
+    opacity: 0.8;
+}
