@@ -1392,4 +1392,469 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.classList.remove('print-exam-mode');
         }, 800);
     };
+    // --- Phase 7.0: 灵动公式悬浮窗引擎 ---
+
+    // 核心数据结构：按单元分类，长内容分页
+    const formulaData = [
+        {
+            title: "一、随机事件",
+            pages: [
+                // 第一页内容 (String.raw 防止 LaTeX 反斜杠被转义)
+                String.raw`
+            <h3 style="margin-top:0;">一、随机事件与概率</h3>
+            <table>
+                <tr><th>公式名称</th><th>公式表达式</th></tr>
+                <tr><td>德摩根公式</td><td>$\overline{A \cup B} = \overline{A} \cap \overline{B}, \quad \overline{A \cap B} = \overline{A} \cup \overline{B}$</td></tr>
+                <tr><td>古典概型</td><td>$P(A) = \frac{m}{n} = \frac{\text{A包含的基本事件数}}{\text{基本事件总数}}$</td></tr>
+                <tr><td>加法公式</td><td>$P(A \cup B) = P(A) + P(B) - P(AB)$</td></tr>
+                <tr><td>条件概率</td><td>$P(B \mid A) = \frac{P(AB)}{P(A)}$</td></tr>
+                <tr><td>全概率公式</td><td>$P(A) = \sum_{i=1}^{n} P(B_i)P(A \mid B_i)$</td></tr>
+                <tr><td>贝叶斯公式</td><td>$P(B_i \mid A) = \frac{P(B_i)P(A \mid B_i)}{\sum_{i=1}^{n} P(B_i)P(A \mid B_i)}$</td></tr>
+                <tr><td>独立性</td><td>$P(AB) = P(A)P(B)$</td></tr>
+            </table>
+            `
+            ]
+        },
+        {
+            title: "二、随机变量",
+            pages: [
+                // 第一页：离散型与连续型基础
+                String.raw`
+            <h3 style="margin-top:0;">1. 离散型分布</h3>
+            <table>
+                <tr><th>分布</th><th>分布律</th></tr>
+                <tr><td>0-1 分布</td><td>$P(X = k) = p^k(1-p)^{1-k}, \quad k = 0,1$</td></tr>
+                <tr><td>二项分布</td><td>$P(X = k) = C_n^k p^k (1-p)^{n-k}$</td></tr>
+                <tr><td>泊松分布</td><td>$P(X = k) = \frac{\lambda^k}{k!}e^{-\lambda}$</td></tr>
+            </table>
+            `,
+                // 第二页：连续型分布 (依靠底部圆点切换过来)
+                String.raw`
+            <h3 style="margin-top:0;">2. 连续型分布</h3>
+            <table>
+                <tr><th>分布</th><th>密度函数 $f(x)$</th></tr>
+                <tr><td>均匀分布</td><td>$f(x) = \begin{cases} \frac{1}{b-a}, & a < x < b \\ 0, & \text{其他} \end{cases}$</td></tr>
+                <tr><td>指数分布</td><td>$f(x) = \begin{cases} \lambda e^{-\lambda x}, & x > 0 \\ 0, & x \le 0 \end{cases}$</td></tr>
+                <tr><td>正态分布</td><td>$f(x) = \frac{1}{\sqrt{2\pi}\sigma} e^{-\frac{(x-\mu)^2}{2\sigma^2}}$</td></tr>
+            </table>
+            `
+            ]
+        },
+        {
+            title: "三、多维随机变量",
+            pages: [
+                // 第一页：离散型二维
+                String.raw`
+            <h3 style="margin-top:0;">1. 离散型二维随机变量</h3>
+            <table>
+                <tr><th>概念</th><th>公式</th></tr>
+                <tr><td>分布律</td><td>$P(X = x_i, Y = y_j) = p_{ij}$</td></tr>
+                <tr><td>分布函数</td><td>$F(x, y) = \sum_{x_i \le x} \sum_{y_j \le y} p_{ij}$</td></tr>
+                <tr><td>边缘分布律</td><td>$p_{i\cdot} = \sum_{j} p_{ij}, \quad p_{\cdot j} = \sum_{i} p_{ij}$</td></tr>
+                <tr><td>条件分布律</td><td>$P(X = x_i \mid Y = y_j) = \frac{p_{ij}}{p_{\cdot j}}$</td></tr>
+            </table>
+            `,
+                // 第二页：连续型二维
+                String.raw`
+            <h3 style="margin-top:0;">2. 连续型二维随机变量</h3>
+            <p><strong>分布函数与性质：</strong><br>
+            $F(x, y) = \int_{-\infty}^{x} \int_{-\infty}^{y} f(u, v) dudv$<br>
+            $\frac{\partial^2 F(x, y)}{\partial x \partial y} = f(x, y)$</p>
+            <p><strong>边缘密度函数：</strong><br>
+            $f_X(x) = \int_{-\infty}^{+\infty} f(x, v) dv$<br>
+            $f_Y(y) = \int_{-\infty}^{+\infty} f(u, y) du$</p>
+            <p><strong>条件概率密度：</strong><br>
+            $f_{Y \mid X}(y \mid x) = \frac{f(x, y)}{f_X(x)}$</p>
+            `,
+                // 第三页：独立性与函数分布
+                String.raw`
+            <h3 style="margin-top:0;">3. 独立性 & 4. 函数的分布</h3>
+            <p><strong>相互独立 $\Leftrightarrow F(x, y) = F_X(x)F_Y(y)$</strong></p>
+            <ul>
+                <li>离散型独立：$p_{ij} = p_{i\cdot} p_{\cdot j}$</li>
+                <li>连续型独立：$f(x, y) = f_X(x) f_Y(y)$</li>
+            </ul>
+            <p><strong>二维随机变量和的分布 $Z = X + Y$：</strong></p>
+            <ul>
+                <li>离散型和：$P(Z = z_k) = \sum_{x_i+y_j=z_k} P(X=x_i, Y=y_j)$</li>
+                <li>连续型和(卷积公式)：<br>$f_Z(z) = \int_{-\infty}^{+\infty} f(x, z-x) dx$</li>
+            </ul>
+            `
+            ]
+        },
+        {
+            title: "四、数字特征",
+            pages: [
+                // 第一页：期望与方差
+                String.raw`
+            <h3 style="margin-top:0;">1. 数学期望 & 2. 方差</h3>
+            <table>
+                <tr><th>特征</th><th>定义 / 核心公式</th></tr>
+                <tr><td>期望 $E(X)$</td><td>离散: $\sum x_k p_k$<br>连续: $\int_{-\infty}^{+\infty} x f(x) dx$</td></tr>
+                <tr><td>期望性质</td><td>$E(aX \pm b) = aE(X) \pm b$<br>$E(X \pm Y) = E(X) \pm E(Y)$</td></tr>
+                <tr><td>方差 $D(X)$</td><td>$D(X) = E(X^2) - E^2(X)$</td></tr>
+                <tr><td>方差性质</td><td>$D(aX \pm b) = a^2D(X)$<br>独立时: $D(X \pm Y) = D(X) + D(Y)$</td></tr>
+            </table>
+            `,
+                // 第二页：协方差与相关系数
+                String.raw`
+            <h3 style="margin-top:0;">3. 协方差与相关系数</h3>
+            <p><strong>协方差：</strong> $Cov(X, Y) = E(XY) - E(X)E(Y)$</p>
+            <p><strong>相关系数：</strong> $\rho_{xy} = \frac{Cov(X, Y)}{\sqrt{D(X)}\sqrt{D(Y)}}$</p>
+            <p><strong>核心性质与推论：</strong></p>
+            <ul>
+                <li>$X, Y$ 独立 $\Rightarrow Cov(X, Y) = 0 \Rightarrow \rho_{xy} = 0$ (即不相关)</li>
+                <li>$D(X \pm Y) = D(X) + D(Y) \pm 2Cov(X, Y)$</li>
+                <li>$Cov(aX + c, bY + d) = abCov(X, Y)$</li>
+                <li>$Cov(X, X) = D(X)$</li>
+            </ul>
+            `,
+                // 第三页：常见分布特征表 (极高频考点)
+                String.raw`
+            <h3 style="margin-top:0;">4. 常见分布的数字特征</h3>
+            <table>
+                <tr><th>分布</th><th>期望 $E(X)$</th><th>方差 $D(X)$</th></tr>
+                <tr><td>0-1分布 $b(1, p)$</td><td>$p$</td><td>$p(1-p)$</td></tr>
+                <tr><td>二项分布 $b(n, p)$</td><td>$np$</td><td>$np(1-p)$</td></tr>
+                <tr><td>泊松分布 $P(\lambda)$</td><td>$\lambda$</td><td>$\lambda$</td></tr>
+                <tr><td>均匀分布 $U(a, b)$</td><td>$\frac{a+b}{2}$</td><td>$\frac{(b-a)^2}{12}$</td></tr>
+                <tr><td>正态分布 $N(\mu, \sigma^2)$</td><td>$\mu$</td><td>$\sigma^2$</td></tr>
+                <tr><td>指数分布 $e(\lambda)$</td><td>$\frac{1}{\lambda}$</td><td>$\frac{1}{\lambda^2}$</td></tr>
+            </table>
+            `
+            ]
+        }
+        , // 记得加逗号
+        {
+            title: "五、大数定律",
+            pages: [
+                // 第一页：切比雪夫与大数定律
+                String.raw`
+            <h3 style="margin-top:0;">1. 切比雪夫不等式</h3>
+            <p>若 $E(X) = \mu, D(X) = \sigma^2$ ，对于任意 $\varepsilon > 0$ 有：<br>
+            $P\{|X - E(X)| \ge \varepsilon\} \le \frac{D(X)}{\varepsilon^2}$</p>
+            
+            <h3 style="margin-top:15px;">2. 大数定律</h3>
+            <ul>
+                <li><strong>切比雪夫大数定律：</strong>独立且方差有界时，样本均值依概率收敛于期望均值。<br>$\frac{1}{n} \sum_{i=1}^{n} X_i \xrightarrow{P} \frac{1}{n} \sum_{i=1}^{n} E(X_i)$</li>
+                <li><strong>伯努利大数定律：</strong>频率依概率收敛于概率。<br>$\lim_{n \to \infty} P\left( \left| \frac{n_A}{n} - p \right| < \varepsilon \right) = 1$</li>
+                <li><strong>辛钦大数定律：</strong>独立同分布且期望存在时，样本均值依概率收敛于期望 $\mu$。</li>
+            </ul>
+            `,
+                // 第二页：中心极限定理
+                String.raw`
+            <h3 style="margin-top:0;">3. 中心极限定理 (CLT)</h3>
+            <p><strong>列维—林德伯格 (独立同分布)：</strong><br>
+            均值为 $\mu$ ，方差为 $\sigma^2 > 0$ ，当 $n$ 充分大时：<br>
+            $Y_n = \frac{\sum_{k=1}^{n} X_k - n\mu}{\sqrt{n}\sigma} \xrightarrow{\sim} N(0,1)$</p>
+            
+            <p><strong>棣莫弗—拉普拉斯 (二项分布逼近)：</strong><br>
+            $X \sim B(n, p)$，当 $n$ 很大时，近似服从正态分布：<br>
+            $\lim_{n \to \infty} P\left\{ \frac{X - np}{\sqrt{np(1-p)}} \le x \right\} = \Phi(x)$</p>
+
+            <p><strong>近似计算核心公式：</strong><br>
+            $P\left( a \le \sum_{k=1}^{n} X_k \le b \right) \approx \Phi\left( \frac{b - n\mu}{\sqrt{n}\sigma} \right) - \Phi\left( \frac{a - n\mu}{\sqrt{n}\sigma} \right)$</p>
+            `
+            ]
+        },
+        {
+            title: "六、基本概念",
+            pages: [
+                // 第一页：统计量
+                String.raw`
+            <h3 style="margin-top:0;">1. 常用统计量</h3>
+            <table>
+                <tr><th>名称</th><th>公式</th></tr>
+                <tr><td>样本均值</td><td>$\overline{x} = \frac{1}{n} \sum_{i=1}^{n} x_i$</td></tr>
+                <tr><td>样本方差</td><td>$s^2 = \frac{1}{n-1} \sum_{i=1}^{n} (x_i - \overline{x})^2$</td></tr>
+                <tr><td>计算化简</td><td>$s^2 = \frac{1}{n-1} \left( \sum_{i=1}^{n} x_i^2 - n\overline{x}^2 \right)$</td></tr>
+                <tr><td>原点矩</td><td>$A_k = \frac{1}{n} \sum_{i=1}^{n} x_i^k$</td></tr>
+                <tr><td>中心矩</td><td>$B_k = \frac{1}{n} \sum_{i=1}^{n} (x_i - \overline{x})^k$</td></tr>
+            </table>
+            `,
+                // 第二页：三大抽样分布
+                String.raw`
+            <h3 style="margin-top:0;">2. 三大抽样分布</h3>
+            <p><strong>(1) $\chi^2$ 分布：</strong> $\chi^2 = x_1^2 + x_2^2 + \cdots + x_n^2 \sim \chi^2(n)$<br>
+            性质：$E[\chi^2(n)] = n, \quad D[\chi^2(n)] = 2n$</p>
+            
+            <p><strong>(2) $t$ 分布：</strong> $T = \frac{X}{\sqrt{Y/n}} \sim t(n)$<br>
+            ($X \sim N(0,1), Y \sim \chi^2(n)$ 且独立)<br>
+            性质：$E(T) = 0 \ (n > 1)$</p>
+            
+            <p><strong>(3) $F$ 分布：</strong> $F(m, n) = \frac{X/m}{Y/n} \sim F(m, n)$<br>
+            性质：若 $F \sim F(m, n)$，则 $1/F \sim F(n, m)$</p>
+            `
+            ]
+        },
+        {
+            title: "七、参数估计",
+            pages: [
+                // 第一页：矩估计与极大似然
+                String.raw`
+            <h3 style="margin-top:0;">1. 点估计两大方法</h3>
+            <p><strong>① 矩估计法 (MoM)：</strong><br>
+            思想：用样本矩（如均值 $\overline{x}$）替换总体矩（如 $E(X)$）。<br>
+            方程：$\mu_i = g_i(\theta_1, \theta_2, \cdots, \theta_k)$，解出参数。</p>
+            
+            <p><strong>② 极大似然估计 (MLE)：</strong><br>
+            步骤一：写出似然函数 $L(\theta) = \prod_{i=1}^{n} f(x_i, \theta)$<br>
+            步骤二：取对数 $\ln L(\theta) = \sum_{i=1}^{n} \ln f(x_i, \theta)$<br>
+            步骤三：求导并令其为0 $\frac{\partial \ln L}{\partial \theta_i} = 0$，解方程组。</p>
+
+            <h3 style="margin-top:15px;">2. 估计量的评价标准</h3>
+            <ul>
+                <li><strong>无偏性：</strong> $E(\hat{\theta}) = \theta$</li>
+                <li><strong>有效性：</strong> 方差越小越有效，即 $D(\hat{\theta}_1) < D(\hat{\theta}_2)$</li>
+                <li><strong>一致性：</strong> 依概率收敛于真值。</li>
+            </ul>
+            `,
+                // 第二页：置信区间 (超级表格)
+                String.raw`
+            <h3 style="margin-top:0;">3. 单正态总体参数的置信区间</h3>
+            <p style="font-size: 12px; color: #666;">（置信水平为 $1-\alpha$）</p>
+            <table>
+                <tr><th>条件</th><th>参数</th><th>枢轴量及分布</th></tr>
+                <tr>
+                    <td>已知 $\sigma^2$</td>
+                    <td>$\mu$</td>
+                    <td>$Z = \frac{\overline{X} - \mu}{\sigma / \sqrt{n}} \sim N(0,1)$</td>
+                </tr>
+                <tr>
+                    <td colspan="3" style="background:#f8f9fa;">
+                        区间：$\left( \overline{x} - z_{\alpha/2}\frac{\sigma}{\sqrt{n}}, \overline{x} + z_{\alpha/2}\frac{\sigma}{\sqrt{n}} \right)$
+                    </td>
+                </tr>
+                <tr>
+                    <td>未知 $\sigma^2$</td>
+                    <td>$\mu$</td>
+                    <td>$T = \frac{\overline{X} - \mu}{S / \sqrt{n}} \sim t(n-1)$</td>
+                </tr>
+                <tr>
+                    <td colspan="3" style="background:#f8f9fa;">
+                        区间：$\left( \overline{x} - t_{\alpha/2}\frac{S}{\sqrt{n}}, \overline{x} + t_{\alpha/2}\frac{S}{\sqrt{n}} \right)$
+                    </td>
+                </tr>
+                <tr>
+                    <td>未知 $\mu$</td>
+                    <td>$\sigma^2$</td>
+                    <td>$\chi^2 = \frac{(n-1)S^2}{\sigma^2} \sim \chi^2(n-1)$</td>
+                </tr>
+                <tr>
+                    <td colspan="3" style="background:#f8f9fa;">
+                        区间：$\left( \frac{(n-1)s^2}{\chi_{\alpha/2}^2}, \frac{(n-1)s^2}{\chi_{1-\alpha/2}^2} \right)$
+                    </td>
+                </tr>
+            </table>
+            `
+            ]
+        }
+        , // 记得加上逗号
+        {
+            title: "八、假设检验",
+            pages: [
+                // 第一页：基本概念与两类错误
+                String.raw`
+            <h3 style="margin-top:0;">1. 假设检验的基本概念</h3>
+            <table>
+                <tr><th>概念</th><th>内容详述</th></tr>
+                <tr>
+                    <td><strong>基本思想</strong></td>
+                    <td>统计思想是小概率原理。显著性水平常取 $\alpha=0.05, 0.01$ 或 $0.10$。</td>
+                </tr>
+                <tr>
+                    <td><strong>基本步骤</strong></td>
+                    <td>
+                        ① 提出原假设 $H_0$；<br>
+                        ② 选择检验统计量 $g(X_1, \cdots, X_n)$；<br>
+                        ③ 查表找分位数，定出拒绝域 $W$；<br>
+                        ④ 计算实测值，落入 $W$ 则拒绝 $H_0$，否则接受。
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>第一类错误<br>(弃真错误)</strong></td>
+                    <td>$H_0$ 为真时，却拒绝了 $H_0$。<br>
+                    $P\{\text{拒绝 } H_0 \mid H_0 \text{ 为真}\} = \alpha$</td>
+                </tr>
+                <tr>
+                    <td><strong>第二类错误<br>(取伪错误)</strong></td>
+                    <td>$H_0$ 不真时，却接受了 $H_0$。<br>
+                    $P\{\text{接受 } H_0 \mid H_0 \text{ 不真}\} = \beta$</td>
+                </tr>
+                <tr>
+                    <td><strong>两类错误的关系</strong></td>
+                    <td>样本容量 $n$ 一定时，$\alpha$ 变小则 $\beta$ 变大。要想使两者同时变小，必须<strong>增加样本容量</strong>。</td>
+                </tr>
+            </table>
+            `,
+                // 第二页：单正态总体假设检验 (使用 rowspan 优化排版)
+                String.raw`
+            <h3 style="margin-top:0;">2. 单正态总体参数的假设检验</h3>
+            <p style="font-size: 14px; color: #666; margin-bottom: 8px;">（显著性水平为 $\alpha$）</p>
+            <table>
+                <tr><th>条件</th><th>原假设 $H_0$</th><th>检验统计量及分布</th><th>拒绝域 $W$</th></tr>
+                
+                <tr>
+                    <td rowspan="3" style="background:#f8f9fa;">已知 $\sigma^2$</td>
+                    <td>$\mu = \mu_0$</td>
+                    <td rowspan="3">$Z = \frac{\overline{X} - \mu_0}{\sigma / \sqrt{n}} \sim N(0,1)$</td>
+                    <td>$|z| > z_{\alpha/2}$</td>
+                </tr>
+                <tr><td>$\mu \le \mu_0$</td><td>$z > z_\alpha$</td></tr>
+                <tr><td>$\mu \ge \mu_0$</td><td>$z < -z_\alpha$</td></tr>
+                
+                <tr>
+                    <td rowspan="3" style="background:#f8f9fa;">未知 $\sigma^2$</td>
+                    <td>$\mu = \mu_0$</td>
+                    <td rowspan="3">$T = \frac{\overline{X} - \mu_0}{S / \sqrt{n}} \sim t(n-1)$</td>
+                    <td>$|t| > t_{\alpha/2}(n-1)$</td>
+                </tr>
+                <tr><td>$\mu \le \mu_0$</td><td>$t > t_\alpha(n-1)$</td></tr>
+                <tr><td>$\mu \ge \mu_0$</td><td>$t < -t_\alpha(n-1)$</td></tr>
+                
+                <tr>
+                    <td rowspan="3" style="background:#f8f9fa;">未知 $\mu$</td>
+                    <td>$\sigma^2 = \sigma_0^2$</td>
+                    <td rowspan="3">$\chi^2 = \frac{(n-1)S^2}{\sigma_0^2} \sim \chi^2(n-1)$</td>
+                    <td style="font-size: 16px;">$\chi^2 < \chi_{1-\alpha/2}^2$<br>或 $\chi^2 > \chi_{\alpha/2}^2$</td>
+                </tr>
+                <tr><td>$\sigma^2 \le \sigma_0^2$</td><td>$\chi^2 > \chi_\alpha^2$</td></tr>
+                <tr><td>$\sigma^2 \ge \sigma_0^2$</td><td>$\chi^2 < \chi_{1-\alpha}^2$</td></tr>
+            </table>
+            <p style="font-size: 13px; color: #888; margin-top: 10px;">* 注：已知 $\mu$ 检验 $\sigma^2$ 的情况较少见，其统计量为 $\chi^2 = \frac{\sum (x_i - \mu)^2}{\sigma_0^2} \sim \chi^2(n)$，拒绝域形式与上述类似，仅自由度变为 $n$。</p>
+            `
+            ]
+        }
+    ];
+
+    // --- Phase 7.1: 实用主义公式弹窗引擎 (重构版) ---
+
+    // 状态管理
+    let currentChapterIndex = 0;
+    let currentPageIndex = 0;
+
+    // DOM 元素获取 (更新版)
+    const fab = document.getElementById('formula-fab');
+    const overlay = document.getElementById('formula-overlay');
+    const modalTitle = document.getElementById('formula-modal-title');
+    const contentContainer = document.getElementById('formula-content');
+    const closeBtn = document.getElementById('formula-close-btn');
+
+    // 获取 4 个导航按钮
+    const prevBtnTop = document.getElementById('prev-btn-top');
+    const nextBtnTop = document.getElementById('next-btn-top');
+    const prevBtnBottom = document.getElementById('prev-btn-bottom');
+    const nextBtnBottom = document.getElementById('next-btn-bottom');
+
+
+    // 初始化渲染 (打开弹窗时调用)
+    function initFormulaModal() {
+        renderFormulaContent();
+    }
+
+    // 核心渲染函数
+    function renderFormulaContent() {
+        const chapter = formulaData[currentChapterIndex];
+
+        // 1. 更新弹窗标题
+        modalTitle.textContent = chapter.title;
+
+        // 2. 注入当前页 HTML 内容
+        contentContainer.innerHTML = chapter.pages[currentPageIndex];
+        contentContainer.scrollTop = 0; // 滚动回顶部
+
+        // 3. 调用 KaTeX 渲染公式
+        if (window.renderMathInElement) {
+            window.renderMathInElement(contentContainer, {
+                delimiters: [
+                    { left: "$$", right: "$$", display: true },
+                    { left: "$", right: "$", display: false },
+                    { left: "\\begin{cases}", right: "\\end{cases}", display: true }
+                ]
+            });
+        }
+
+        // 4. 更新导航按钮状态与动态 Tooltip
+        updateNavButtonsState();
+    }
+
+    // 更新按钮状态与悬浮提示 (Tooltip)
+    function updateNavButtonsState() {
+        // --- 顶部按钮控制：单元 (Chapter) ---
+        const isFirstChapter = (currentChapterIndex === 0);
+        const isLastChapter = (currentChapterIndex === formulaData.length - 1);
+
+        prevBtnTop.disabled = isFirstChapter;
+        nextBtnTop.disabled = isLastChapter;
+
+        // 动态设置顶部按钮的 Tooltip (title 属性)
+        prevBtnTop.title = isFirstChapter ? '已经是第一单元' : '上一单元: ' + formulaData[currentChapterIndex - 1].title;
+        nextBtnTop.title = isLastChapter ? '已经是最后一单元' : '下一单元: ' + formulaData[currentChapterIndex + 1].title;
+
+        // --- 底部按钮控制：页码 (Page) ---
+        const isFirstPage = (currentPageIndex === 0);
+        const isLastPage = (currentPageIndex === formulaData[currentChapterIndex].pages.length - 1);
+
+        prevBtnBottom.disabled = isFirstPage;
+        nextBtnBottom.disabled = isLastPage;
+
+        // 底部按钮固定 Tooltip
+        prevBtnBottom.title = isFirstPage ? '本单元第一页' : '上一页';
+        nextBtnBottom.title = isLastPage ? '本单元最后一页' : '下一页';
+    }
+
+    // --- 导航逻辑分离 ---
+
+    // 1. 跨单元切换 (顶部按钮调用)
+    function goPrevChapter() {
+        if (currentChapterIndex > 0) {
+            currentChapterIndex--;
+            currentPageIndex = 0; // 切换单元时，强制回到第一页
+            renderFormulaContent();
+        }
+    }
+
+    function goNextChapter() {
+        if (currentChapterIndex < formulaData.length - 1) {
+            currentChapterIndex++;
+            currentPageIndex = 0; // 切换单元时，强制回到第一页
+            renderFormulaContent();
+        }
+    }
+
+    // 2. 单元内翻页 (底部按钮调用)
+    function goPrevPage() {
+        if (currentPageIndex > 0) {
+            currentPageIndex--;
+            renderFormulaContent();
+        }
+    }
+
+    function goNextPage() {
+        if (currentPageIndex < formulaData[currentChapterIndex].pages.length - 1) {
+            currentPageIndex++;
+            renderFormulaContent();
+        }
+    }
+
+    // --- 事件监听绑定 ---
+
+    // 打开弹窗
+    fab.addEventListener('click', () => {
+        overlay.classList.add('active');
+        initFormulaModal();
+    });
+
+    // 关闭弹窗 (点击叉号 X 或遮罩层)
+    closeBtn.addEventListener('click', () => overlay.classList.remove('active'));
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.classList.remove('active');
+    });
+
+    // 绑定独立的导航事件
+    prevBtnTop.addEventListener('click', goPrevChapter);
+    nextBtnTop.addEventListener('click', goNextChapter);
+
+    prevBtnBottom.addEventListener('click', goPrevPage);
+    nextBtnBottom.addEventListener('click', goNextPage);
 });

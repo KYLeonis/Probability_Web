@@ -1832,6 +1832,201 @@ body.dark-mode .katex-display:hover {
     /* 留出填分数的空白 */
 }
 
+/* ==========================================
+   实用主义风格公式悬浮窗 (全局生效)
+   ========================================== */
+/* 悬浮按钮 (FAB) - 保持不变 */
+.material-fab {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background-color: #d3e3fd;
+    color: #041e49;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.material-fab:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+/* 遮罩层 - 保持不变 */
+.material-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    /* 背景稍微加深一点 */
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.material-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 居中弹窗 - 调整圆角和内边距 */
+.material-modal {
+    width: 90%;
+    max-width: 650px;
+    height: 80vh;
+    background: #ffffff;
+    border-radius: 20px;
+    /* 圆角稍微改小一点，更扎实 */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+    transform: scale(0.95);
+    transition: all 0.2s ease;
+}
+
+.material-overlay.active .material-modal {
+    transform: scale(1);
+}
+
+/* --- 新增：弹窗头部区域 --- */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid #eee;
+    background: #f8f9fa;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+/* --- 新增：通用图标按钮 (用于关闭键) --- */
+.icon-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    color: #666;
+    transition: all 0.2s;
+    display: flex;
+}
+
+.icon-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #333;
+}
+
+.close-btn {
+    margin-right: -8px;
+}
+
+/* 微调位置 */
+
+/* --- 新增：导航栏区域 --- */
+.nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: #fff;
+    flex-shrink: 0;
+    /* 防止被内容挤压 */
+}
+
+.top-nav {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.bottom-nav {
+    border-top: 1px solid #f0f0f0;
+}
+
+/* --- 新增：圆角翻页按钮 --- */
+.nav-btn.rounded-arrow {
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    /* 完美的圆形/胶囊形 */
+    border: 1px solid #d0d7de;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.nav-btn.rounded-arrow:hover:not(:disabled) {
+    background-color: #f3f4f6;
+    border-color: #c0c7cd;
+}
+
+/* 禁用状态 (灰色) */
+.nav-btn.rounded-arrow:disabled {
+    background-color: #f8f9fa;
+    color: #aab;
+    border-color: #e0e0e0;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* --- 内容区修改：显著加大字体 --- */
+.material-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 32px;
+    /* 核心修改：加大基础字号 */
+    font-size: 18px;
+    line-height: 1.7;
+    color: #222;
+}
+
+/* 加大表格内的字号和内边距 */
+.material-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.material-content th,
+.material-content td {
+    border: 1px solid #e0e0e0;
+    padding: 14px 16px;
+    /* 加大内边距 */
+    text-align: left;
+    font-size: 18px;
+    /* 表格字号同步加大 */
+}
+
+.material-content th {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+/* 确保 KaTeX 公式也同步放大 */
+.katex {
+    font-size: 1.1em !important;
+}
+
 /* 打印时覆盖并显示试卷 */
 @media print {
     @page {
