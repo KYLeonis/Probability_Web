@@ -285,6 +285,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="ghost-button" onclick="window.toggleAnswer('${q.id}')">
                         查看解析
                     </button>
+                    <button class="ghost-button reply-btn" id="btn-comment-${q.id}">
+                        💬 评论
+                    </button>
                     <button class="ghost-button ${isFav ? 'active-fav' : ''}" onclick="window.toggleFavorite('${q.id}', this)" id="btn-fav-${q.id}">
                         ${isFav ? '⭐ 已收藏' : '⭐ 收藏'}
                     </button>
@@ -296,6 +299,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div id="ans-${q.id}" class="answer-section">
                     <div class="answer-content">${q.answer}</div>
+                </div>
+                <div id="comments-${q.id}" class="geek-comment-section">
+                    <div class="geek-comment-header">
+                        <span class="geek-comment-title">评论 - 加载中</span>
+                        <button class="geek-comment-fab new-comment-btn" data-id="${q.id}" title="添加评论">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="geek-comment-thread" id="thread-${q.id}">
+                        <!-- Comments will be injected here -->
+                    </div>
                 </div>
             </div>
         `;
@@ -1858,3 +1875,233 @@ document.addEventListener('DOMContentLoaded', () => {
     prevBtnBottom.addEventListener('click', goPrevPage);
     nextBtnBottom.addEventListener('click', goNextPage);
 });
+// --- Core 5: Comment Event Delegation ---
+
+// 5.1 Toggle Comment Section
+document.addEventListener('click', (e) => {
+    const replyBtn = e.target.closest('.reply-btn');
+    if (replyBtn) {
+        const card = replyBtn.closest('.question-card');
+        if (!card) return;
+        const qId = card.dataset.id;
+        const commentSection = document.getElementById('comments-' + qId);
+
+        if (commentSection.classList.contains('expanded')) {
+            commentSection.classList.remove('expanded');
+            replyBtn.innerHTML = '💬 展开评论';
+        } else {
+            commentSection.classList.add('expanded');
+            replyBtn.innerHTML = '💬 收起评论';
+            window.renderCommentsTree(qId, card);
+        }
+        return;
+    }
+
+    // 5.2 Add New Top-Level Comment (FAB button)
+    const newCommentBtn = e.target.closest('.new-comment-btn');
+    if (newCommentBtn) {
+        const qId = newCommentBtn.dataset.id;
+        const threadContainer = document.getElementById('thread-' + qId);
+        window.showCommentInput(threadContainer, qId, null);
+        return;
+    }
+
+    // 5.3 Reply to a Comment (Reply button in a comment card)
+    const replyActionBtn = e.target.closest('.action-reply');
+    if (replyActionBtn) {
+        const commentCard = replyActionBtn.closest('.geek-comment-card');
+        const qId = commentCard.dataset.qid;
+        const parentId = commentCard.dataset.commentId;
+        // Prevent multiple textareas under the same comment
+        if (!commentCard.querySelector('.geek-comment-input-area')) {
+            window.showCommentInput(commentCard, qId, parentId);
+        }
+        return;
+    }
+
+    // 5.4 Like a Comment
+    const likeActionBtn = e.target.closest('.action-like');
+    if (likeActionBtn) {
+        const commentCard = likeActionBtn.closest('.geek-comment-card');
+        const commentId = commentCard.dataset.commentId;
+
+        const comments = JSON.parse(localStorage.getItem('userComments') || '[]');
+        const comment = comments.find(c => c.id === commentId);
+        if (comment) {
+            // Mock toggle like
+            if (likeActionBtn.classList.contains('is-liked')) {
+                comment.likes = Math.max(0, (comment.likes || 0) - 1);
+                likeActionBtn.classList.remove('is-liked');
+            } else {
+                comment.likes = (comment.likes || 0) + 1;
+                likeActionBtn.classList.add('is-liked');
+            }
+            localStorage.setItem('userComments', JSON.stringify(comments));
+
+            // Only update the specific like text to avoid re-rendering entire tree
+            const likeText = likeActionBtn.querySelector('span');
+            if (likeText) likeText.textContent = `赞 (${comment.likes})`;
+        }
+        return;
+    }
+
+    // 5.5 Submit Comment Form
+    const submitCommentBtn = e.target.closest('.geek-btn-submit');
+    if (submitCommentBtn) {
+        const inputArea = submitCommentBtn.closest('.geek-comment-input-area');
+        const textarea = inputArea.querySelector('.geek-textarea');
+        const qId = inputArea.dataset.qid;
+        const parentId = inputArea.dataset.parentId === 'null' ? null : inputArea.dataset.parentId;
+
+        const content = textarea.value.trim();
+        if (!content) {
+            alert('评论内容不能为空');
+            return;
+        }
+
+        const comments = JSON.parse(localStorage.getItem('userComments') || '[]');
+        const newComment = {
+            id: 'c_' + Date.now(),
+            questionId: qId,
+            parentId: parentId,
+            content: content,
+            timestamp: Date.now(),
+            likes: 0
+        };
+
+        comments.push(newComment);
+        localStorage.setItem('userComments', JSON.stringify(comments));
+
+        // Re-render the tree
+        const card = document.querySelector(`.question-card[data-id="${qId}"]`);
+        if (card) window.renderCommentsTree(qId, card);
+        return;
+    }
+
+    // 5.6 Cancel Comment Form
+    const cancelCommentBtn = e.target.closest('.geek-btn-cancel');
+    if (cancelCommentBtn) {
+        const inputArea = cancelCommentBtn.closest('.geek-comment-input-area');
+        if (inputArea) inputArea.remove();
+        return;
+    }
+});
+
+// --- Core 6: Comment Rendering Engine ---
+
+window.renderCommentsTree = function (questionId, cardContainer) {
+    const comments = JSON.parse(localStorage.getItem('userComments') || '[]');
+    const questionComments = comments.filter(c => c.questionId === questionId);
+
+    const threadContainer = cardContainer.querySelector('.geek-comment-thread');
+    const titleSpan = cardContainer.querySelector('.geek-comment-title');
+
+    if (titleSpan) {
+        titleSpan.textContent = `评论 - ${questionComments.length} 条`;
+    }
+
+    if (questionComments.length === 0) {
+        threadContainer.innerHTML = '<div class="geek-empty-state">还没有人评论，快来抢沙发吧！</div>';
+        return;
+    }
+
+    // Base Map for quick lookups
+    const commentMap = {};
+    questionComments.forEach(c => commentMap[c.id] = { ...c, children: [] });
+
+    // Build Tree
+    const rootComments = [];
+    questionComments.forEach(c => {
+        if (c.parentId && commentMap[c.parentId]) {
+            commentMap[c.parentId].children.push(commentMap[c.id]);
+        } else {
+            rootComments.push(commentMap[c.id]);
+        }
+    });
+
+    // Sort children by time (oldest first for thread continuity)
+    const sortComments = (arr) => {
+        arr.sort((a, b) => a.timestamp - b.timestamp);
+        arr.forEach(c => {
+            if (c.children.length > 0) sortComments(c.children);
+        });
+    };
+    sortComments(rootComments);
+
+    // Render Tree Recursive
+    let htmlContext = '';
+
+    const generateHtml = (node, level = 0) => {
+        const isReply = level > 0 ? 'is-reply' : '';
+        const dateStr = new Date(node.timestamp).toLocaleString();
+
+        let html = `
+                <div class="geek-comment-card ${isReply}" data-comment-id="${node.id}" data-qid="${questionId}">
+                    <div class="geek-comment-avatar">G</div>
+                    <div class="geek-comment-body">
+                        <div class="geek-comment-meta">
+                            <span class="geek-comment-author">匿名同学</span>
+                            <span class="geek-comment-time">${dateStr}</span>
+                        </div>
+                        <div class="geek-comment-content">${node.content}</div>
+                        <div class="geek-comment-actions">
+                            <button class="geek-comment-btn action-reply">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 10 20 15 15 20"></polyline><path d="M4 4v7a4 4 0 0 0 4 4h12"></path></svg>
+                                回复
+                            </button>
+                            <button class="geek-comment-btn action-like">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                                <span>赞 (${node.likes || 0})</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        htmlContext += html;
+
+        node.children.forEach(child => generateHtml(child, level + 1));
+    };
+
+    rootComments.forEach(root => generateHtml(root, 0));
+
+    threadContainer.innerHTML = htmlContext;
+
+    // CRITICAL: Render KaTeX for newly inserted DOM
+    if (window.renderMathInElement) {
+        window.renderMathInElement(threadContainer, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            throwOnError: false
+        });
+    }
+};
+
+window.showCommentInput = function (container, qId, parentId) {
+    const inputArea = document.createElement('div');
+    inputArea.className = 'geek-comment-input-area';
+    inputArea.dataset.qid = qId;
+    inputArea.dataset.parentId = parentId;
+
+    const placeholderText = parentId ? '回复同学...' : '分享你的解题思路... (支持 LaTeX 语法，如 $x^2$)';
+
+    inputArea.innerHTML = `
+            <textarea class="geek-textarea" placeholder="${placeholderText}"></textarea>
+            <div class="geek-form-actions">
+                <button class="geek-btn-cancel">取消</button>
+                <button class="geek-btn-submit">发布</button>
+            </div>
+        `;
+
+    container.appendChild(inputArea);
+
+    // Auto-focus and scroll to input
+    const textarea = inputArea.querySelector('.geek-textarea');
+    textarea.focus();
+    inputArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+};
+
