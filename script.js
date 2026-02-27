@@ -531,13 +531,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toggle Answer (Global for inline onclick)
     window.toggleAnswer = function (id) {
         const el = document.getElementById(`ans-${id}`);
-        const btn = el.previousElementSibling; // ghost button
+        const btn = el.previousElementSibling.querySelector('button'); // Target the ghost-button inside card-action-group
         if (el.style.maxHeight && el.style.maxHeight !== '0px') {
             el.style.maxHeight = '0px';
             el.style.opacity = '0';
+            el.classList.remove('expanded');
             btn.textContent = '查看解析';
         } else {
-            el.style.maxHeight = el.scrollHeight + 'px'; // Set to actual height
+            el.classList.add('expanded');
+            // Give extra buffer for the padding and inner content
+            el.style.maxHeight = (el.scrollHeight + 150) + 'px';
             el.style.opacity = '1';
             btn.textContent = '收起解析';
         }
